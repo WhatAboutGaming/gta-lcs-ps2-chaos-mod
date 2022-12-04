@@ -1,0 +1,18 @@
+{
+  "options": {
+    "debug": true,
+    "messagesLogLevel": "trace"
+  },
+  "connection": {
+    "reconnect": true,
+    "secure": true
+  },
+  "identity": {
+    "username": "justinfan123",
+    "password": "OAUTHOAUTHOAUTHOAUTHOAUTHOAUTH"
+  },
+  "channels": [
+    "justinfan123"
+  ],
+  "logchat": true
+}
