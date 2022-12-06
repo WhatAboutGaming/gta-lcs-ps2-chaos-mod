@@ -1095,6 +1095,8 @@ function changeTime(username, message, channelName, customRewardIndex) {
       returnMessage = "Successfully changed time to " + timeHours + ":" + timeMinutes + "!";
       writeToNotificationBox(returnMessage);
       client.action(channelName, "@" + username + " " + returnMessage);
+      gameTimeMinutesToUnfreeze = timeMinutes;
+      gameTimeHoursToUnfreeze = timeHours;
       freezeMovementState = false;
       return returnMessage;
     }
