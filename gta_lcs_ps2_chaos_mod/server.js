@@ -27,6 +27,7 @@ var vehiclePointerToFreeze = 0;
 var playerLocationToFreezeObject = {};
 var vehicleLocationToFreezeObject = {};
 var lastChannelName = "";
+var playerPointerGlobal = 0;
 
 var emptyWeaponInventory = fs.readFileSync("empty_weapon_inventory_data.bin", "binary");
 var emptyWeaponInventoryBuffer = Buffer.alloc(280, 0);
@@ -357,6 +358,10 @@ function checkIfAppExists() {
       //console.log(gameMemoryToDisplay);
       io.sockets.emit("game_memory_to_display", gameMemoryToDisplay);
       console.log("Process opened");
+    }
+    playerPointerGlobal = readFromAppMemory("Player Pointer").current_value;
+    if (playerPointerGlobal <= 0 || playerPointerGlobal >= 0x02000000) {
+      return;
     }
     //
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Position X").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Y").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Z").current_value)
