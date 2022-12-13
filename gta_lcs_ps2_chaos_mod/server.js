@@ -370,12 +370,12 @@ function checkIfAppExists() {
         writeToAppMemory("Screen Position X", 0); // Set screen position to center
         writeToAppMemory("Screen Position Y", 0); // Set screen position to center
         writeToAppMemory("Wide Screen Option", 1); // Enable Widescreen
-        writeToAppMemory("SFX Volume (Settings menu)", 255); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("SFX Volume", 255); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("SFX Volume 2 (Fade volume)", 255); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("Radio Volume (Settings menu)", 255); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("Radio Volume", 255); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("Radio Volume 2 (Fade volume)", 255); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("SFX Volume (Settings menu)", 127); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("SFX Volume", 127); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("SFX Volume 2 (Fade volume)", 127); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("Radio Volume (Settings menu)", 127); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("Radio Volume", 127); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("Radio Volume 2 (Fade volume)", 127); // Turn all the volumes all the way up, again because of twitch
         writeToAppMemory("Subtitles Option", 1); // Enable subtitles because some viewers might appreciate it
         writeToAppMemory("Hud Mode Option", 1); // Enable HUD
         writeToAppMemory("Radar Mode Option", 0); // Enable Map & Blips
