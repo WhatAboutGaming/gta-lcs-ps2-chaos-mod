@@ -27,7 +27,7 @@ var vehiclePointerToFreeze = 0;
 var playerLocationToFreezeObject = {};
 var vehicleLocationToFreezeObject = {};
 var lastChannelName = "";
-var playerPointerGlobal = 0;
+var playerPointerGlobal = {};
 
 var emptyWeaponInventory = fs.readFileSync("empty_weapon_inventory_data.bin", "binary");
 var emptyWeaponInventoryBuffer = Buffer.alloc(280, 0);
@@ -359,9 +359,28 @@ function checkIfAppExists() {
       io.sockets.emit("game_memory_to_display", gameMemoryToDisplay);
       console.log("Process opened");
     }
-    playerPointerGlobal = readFromAppMemory("Player Pointer").current_value;
-    if (playerPointerGlobal <= 0 || playerPointerGlobal >= 0x02000000) {
+    playerPointerGlobal = readFromAppMemory("Player Pointer");
+    if (playerPointerGlobal.current_value <= 0 || playerPointerGlobal.current_value >= 0x02000000) {
       return;
+    }
+    if (playerPointerGlobal.current_value != playerPointerGlobal.old_value) {
+      if (playerPointerGlobal.current_value >= 0 && playerPointerGlobal.current_value <= 0x02000000) {
+        // Override some game settings to specific values when player pointer changes to a valid address
+        writeToAppMemory("Brightness", 1024); // Turn brightness up high so twitch doesn't completely destroy the video quality of this dark game
+        writeToAppMemory("Screen Position X", 0); // Set screen position to center
+        writeToAppMemory("Screen Position Y", 0); // Set screen position to center
+        writeToAppMemory("Wide Screen Option", 1); // Enable Widescreen
+        writeToAppMemory("SFX Volume (Settings menu)", 255); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("SFX Volume", 255); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("SFX Volume 2 (Fade volume)", 255); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("Radio Volume (Settings menu)", 255); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("Radio Volume", 255); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("Radio Volume 2 (Fade volume)", 255); // Turn all the volumes all the way up, again because of twitch
+        writeToAppMemory("Subtitles Option", 1); // Enable subtitles because some viewers might appreciate it
+        writeToAppMemory("Hud Mode Option", 1); // Enable HUD
+        writeToAppMemory("Radar Mode Option", 0); // Enable Map & Blips
+        writeToAppMemory("Vibration Option", 1); // Enable Controller Vibration
+      }
     }
     //
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Position X").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Y").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Z").current_value)
@@ -661,6 +680,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
   returnMessage = "LET IT RIP! (EXTREME!)";
   writeToNotificationBox(returnMessage);
   client.action(channelName, "@" + username + " " + returnMessage);
+  io.sockets.emit("play_sound", "Beyblade");
   return returnMessage;
 }
 
@@ -1097,12 +1117,12 @@ function changeTime(username, message, channelName, customRewardIndex) {
       writeToAppMemory("Minutes", parseInt(msgWords[1], 10));
       timeHours = readFromAppMemory("Hours").current_value;
       timeMinutes = readFromAppMemory("Minutes").current_value;
-      returnMessage = "Successfully changed time to " + timeHours + ":" + timeMinutes + "!";
+      returnMessage = "Successfully changed time to " + timeHours.toString().padStart(2, "0") + ":" + timeMinutes.toString().padStart(2, "0") + "!";
       writeToNotificationBox(returnMessage);
       client.action(channelName, "@" + username + " " + returnMessage);
       gameTimeMinutesToUnfreeze = timeMinutes;
       gameTimeHoursToUnfreeze = timeHours;
-      freezeMovementState = false;
+      //freezeMovementState = false;
       return returnMessage;
     }
   }
@@ -1991,6 +2011,7 @@ function spinCar(username, message, channelName, customRewardIndex) {
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Z", 10);
     writeToNotificationBox(returnMessage);
     client.action(channelName, "@" + username + " " + returnMessage);
+    io.sockets.emit("play_sound", "Beyblade");
     return returnMessage;
   }
 }

@@ -15,18 +15,19 @@ function preload() {
   // For now the sound effects are hardcoded, maybe a better way would be to just look for all files that have the mp3 extension
   soundEffects[0] = loadSound("bing_bong.mp3");
   soundEffects[1] = loadSound("Taco_Bell_Bong.mp3");
-  soundEffects[2] = loadSound("we_got_him.mp3");
-  soundEffects[3] = loadSound("price_is_right_horn.mp3");
-  soundEffects[4] = loadSound("fail_sound.mp3");
-  soundEffects[5] = loadSound("bruh.mp3");
-  soundEffects[6] = loadSound("nelson_haha.mp3");
-  soundEffects[7] = loadSound("sad_trombone.mp3");
-  soundEffects[8] = loadSound("nice_job_dick_face.mp3");
-  soundEffects[9] = loadSound("smb_death.mp3");
-  soundEffects[10] = loadSound("smb_game_over.mp3");
-  soundEffects[11] = loadSound("smb_death_game_over.mp3");
-  soundEffects[12] = loadSound("smb_death_game_over_short.mp3");
-  soundEffects[13] = loadSound("pretty_stupid.mp3");
+  soundEffects[2] = loadSound("beyblade.mp3");
+  soundEffects[3] = loadSound("we_got_him.mp3");
+  soundEffects[4] = loadSound("price_is_right_horn.mp3");
+  soundEffects[5] = loadSound("fail_sound.mp3");
+  soundEffects[6] = loadSound("bruh.mp3");
+  soundEffects[7] = loadSound("nelson_haha.mp3");
+  soundEffects[8] = loadSound("sad_trombone.mp3");
+  soundEffects[9] = loadSound("nice_job_dick_face.mp3");
+  soundEffects[10] = loadSound("smb_death.mp3");
+  soundEffects[11] = loadSound("smb_game_over.mp3");
+  soundEffects[12] = loadSound("smb_death_game_over.mp3");
+  soundEffects[13] = loadSound("smb_death_game_over_short.mp3");
+  soundEffects[14] = loadSound("pretty_stupid.mp3");
 }
 
 function setup() {
@@ -42,6 +43,9 @@ function setup() {
     }
     if (data == "TacoBellBong") {
       soundEffects[1].play();
+    }
+    if (data == "Beyblade") {
+      soundEffects[2].play();
     }
     if (data == "Random") {
       let randomSoundEffectIndex = Math.floor(Math.random() * soundEffects.length);
