@@ -36,8 +36,8 @@ emptyWeaponInventoryBuffer.write(emptyWeaponInventory, 0, 280, "binary");
 var currentWeaponInventory = undefined;
 var oldWeaponInventory = undefined;
 
-let startPointerAddress = 0x01000000;
-let endPointerAddress = 0x02000000;
+var startPointerAddress = 0x01000000;
+var endPointerAddress = 0x02000000;
 
 var client = new tmi.client(chatConfig);
 client.connect();
