@@ -36,6 +36,9 @@ emptyWeaponInventoryBuffer.write(emptyWeaponInventory, 0, 280, "binary");
 var currentWeaponInventory = undefined;
 var oldWeaponInventory = undefined;
 
+let startPointerAddress = 0x01000000;
+let endPointerAddress = 0x02000000;
+
 var client = new tmi.client(chatConfig);
 client.connect();
 
@@ -91,10 +94,9 @@ function onMessageHandler(target, tags, message, self) {
     }
     messageToWrite = message;
     if (customRewardId != undefined) {
-      console.log("CUSTOM REWARD ID " + customRewardId);
+      console.log(new Date().toISOString() + " CUSTOM REWARD ID " + customRewardId);
       doCustomReward(finalUsername, message, target, customRewardId);
     }
-    //doCustomReward(finalUsername, message, target, customRewardId);
     if (customRewardId == undefined) {
       let processedMessage = processTextForNotificationBox(messageToWrite);
       if (processedMessage.length > 0) {
@@ -137,7 +139,7 @@ function keepMovementFrozen() {
   playerPointerToFreeze = 0;
   vehiclePointerToFreeze = 0;
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     //returnMessage = "Can't freeze movement, game is not ready, please request a refund!";
@@ -160,7 +162,7 @@ function keepMovementFrozen() {
     writeToAppPointer("Player Pointer", "Player Heading", playerLocationToFreezeObject.playerHeading);
     playerPointerToFreeze = playerPointer;
     vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
-    if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+    if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
       // Freeze vehicle AND player
       writeToAppPointer("Vehicle Pointer", "Vehicle Position X", vehicleLocationToFreezeObject.vehiclePositionX);
       writeToAppPointer("Vehicle Pointer", "Vehicle Position Y", vehicleLocationToFreezeObject.vehiclePositionY);
@@ -183,7 +185,7 @@ function keepMovementFrozen() {
       writeToAppPointer("Player Pointer", "Player Speed X", playerLocationToFreezeObject.playerSpeedX);
       writeToAppPointer("Player Pointer", "Player Speed Y", playerLocationToFreezeObject.playerSpeedY);
       writeToAppPointer("Player Pointer", "Player Speed Z", playerLocationToFreezeObject.playerSpeedZ);
-      if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+      if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
         writeToAppPointer("Vehicle Pointer", "Vehicle Speed X", vehicleLocationToFreezeObject.vehicleSpeedX);
         writeToAppPointer("Vehicle Pointer", "Vehicle Speed Y", vehicleLocationToFreezeObject.vehicleSpeedY);
         writeToAppPointer("Vehicle Pointer", "Vehicle Speed Z", vehicleLocationToFreezeObject.vehicleSpeedZ);
@@ -200,6 +202,29 @@ function keepMovementFrozen() {
       return returnMessage;
     }
   }
+}
+
+function overrideGameSettings() {
+  // Override some game settings to specific values when player pointer changes to a valid address
+  console.log(new Date().toISOString() + " Overriding game settings");
+  writeToAppMemory("Brightness", 1024); // Turn brightness up high so twitch doesn't completely destroy the video quality of this dark game
+  writeToAppMemory("Screen Position X", 0); // Set screen position to center
+  writeToAppMemory("Screen Position Y", 0); // Set screen position to center
+  writeToAppMemory("Wide Screen Option", 1); // Enable Widescreen
+  writeToAppMemory("SFX Volume (Settings menu)", 127); // Turn all the volumes all the way up, again because of twitch
+  writeToAppMemory("SFX Volume", 127); // Turn all the volumes all the way up, again because of twitch
+  writeToAppMemory("SFX Volume 2 (Fade volume)", 127); // Turn all the volumes all the way up, again because of twitch
+  writeToAppMemory("Radio Volume (Settings menu)", 127); // Turn all the volumes all the way up, again because of twitch
+  writeToAppMemory("Radio Volume", 127); // Turn all the volumes all the way up, again because of twitch
+  writeToAppMemory("Radio Volume 2 (Fade volume)", 127); // Turn all the volumes all the way up, again because of twitch
+  writeToAppMemory("Subtitles Option", 1); // Enable subtitles because some viewers might appreciate it
+  writeToAppMemory("Hud Mode Option", 1); // Enable HUD
+  writeToAppMemory("Radar Mode Option", 0); // Enable Map & Blips
+  writeToAppMemory("Vibration Option", 1); // Enable Controller Vibration
+  writeToAppMemory("Invert Look Option", 0); // Invert X-Axis Look, 0 is ON for some reason
+  writeToAppMemory("Controller Configuration Option", 0); // Use a controller configuration that's actually good for the PS2 controller (0 = Full PS2 controller support, 1 = PSP-like controls)
+  writeToAppMemory("Controller Type", 0); // 0 = In car, 1 = On foot (This doesn't really change anything in the game, just displays how the controls are)
+  console.log(new Date().toISOString() + " Overrode game settings");
 }
 
 function doTimedAction() {
@@ -282,6 +307,10 @@ function doCustomReward(username, message, channelName, customRewardId) {
         dropVehiclePoolOnPlayer(username, message, channelName, customRewardIndex);
         return;
       }
+      if (rewardsConfig.rewards[customRewardIndex].action == "drop_pedestrian_pool_on_player") {
+        dropPedestrianPoolOnPlayer(username, message, channelName, customRewardIndex);
+        return;
+      }
       if (rewardsConfig.rewards[customRewardIndex].action == "spin_all_vehicles") {
         spinAllVehicles(username, message, channelName, customRewardIndex);
         return;
@@ -360,26 +389,13 @@ function checkIfAppExists() {
       console.log("Process opened");
     }
     playerPointerGlobal = readFromAppMemory("Player Pointer");
-    if (playerPointerGlobal.current_value <= 0 || playerPointerGlobal.current_value >= 0x02000000) {
+    if (playerPointerGlobal.current_value <= startPointerAddress || playerPointerGlobal.current_value >= endPointerAddress) {
       return;
     }
     if (playerPointerGlobal.current_value != playerPointerGlobal.old_value) {
-      if (playerPointerGlobal.current_value >= 0 && playerPointerGlobal.current_value <= 0x02000000) {
-        // Override some game settings to specific values when player pointer changes to a valid address
-        writeToAppMemory("Brightness", 1024); // Turn brightness up high so twitch doesn't completely destroy the video quality of this dark game
-        writeToAppMemory("Screen Position X", 0); // Set screen position to center
-        writeToAppMemory("Screen Position Y", 0); // Set screen position to center
-        writeToAppMemory("Wide Screen Option", 1); // Enable Widescreen
-        writeToAppMemory("SFX Volume (Settings menu)", 127); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("SFX Volume", 127); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("SFX Volume 2 (Fade volume)", 127); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("Radio Volume (Settings menu)", 127); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("Radio Volume", 127); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("Radio Volume 2 (Fade volume)", 127); // Turn all the volumes all the way up, again because of twitch
-        writeToAppMemory("Subtitles Option", 1); // Enable subtitles because some viewers might appreciate it
-        writeToAppMemory("Hud Mode Option", 1); // Enable HUD
-        writeToAppMemory("Radar Mode Option", 0); // Enable Map & Blips
-        writeToAppMemory("Vibration Option", 1); // Enable Controller Vibration
+      if (playerPointerGlobal.current_value >= startPointerAddress && playerPointerGlobal.current_value <= endPointerAddress) {
+        console.log(new Date().toISOString() + " Player Pointer now changed to a valid address");
+        overrideGameSettings();
       }
     }
     //
@@ -453,7 +469,7 @@ function checkIfAppExists() {
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Health").current_value)
     //console.log(readFromAppPointer("Player Pointer", "Player Health").current_value)
     /*
-    if (playerPointer >= 0 && playerPointer <= 0x02000000) {
+    if (playerPointer >= startPointerAddress && playerPointer <= endPointerAddress) {
       writeToAppMemory("Brightness", 512);
     }
     */
@@ -461,7 +477,7 @@ function checkIfAppExists() {
     //console.log(testVar);
     /*
     if (testVar == -1) {
-      if (vehiclePointer >= 0 && vehiclePointer <= 0x02000000) {
+      if (vehiclePointer >= startPointerAddress && vehiclePointer <= endPointerAddress) {
         vehiclePointers.push(vehiclePointer);
         console.log(vehiclePointers);
         console.log(vehiclePointers.length);
@@ -507,7 +523,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicles, game is not ready, please request a refund!";
@@ -565,7 +581,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
     vehicleRotationSpeedZ: 0
   };
 
-  if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
     vehiclePointerToFreeze = vehiclePointer;
     // Get coordinates for vehicle player is driving
     vehicleLocationToDropVehiclesOn = {
@@ -601,7 +617,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
     //let vehiclePointerValue = vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 0];
     let vehiclePointerToRead = vehicleInPoolIndex;
     let vehiclePointerValue = (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 3] << 24) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 2] << 16) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 1] << 8) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 0]);
-    if (vehiclePointerValue > 0 && vehiclePointerValue < 0x02000000) {
+    if (vehiclePointerValue > startPointerAddress && vehiclePointerValue < endPointerAddress) {
       //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0"));
       //let vehicleIdOffset = parseInt(readFromAppMemory("Vehicle ID").offset, 16);
       //let vehicleXPositionOffset = parseInt(readFromAppMemory("Vehicle X Position").offset, 16);
@@ -684,8 +700,182 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
   return returnMessage;
 }
 
+function dropPedestrianPoolOnPlayer(username, message, channelName, customRewardIndex) {
+  // THIS IS BROKEN AND I DON'T KNOW WHY, I THINK WHAT I THOUGHT WAS THE PLAYER POOL ISN'T ACTUALLY THE PLAYER POOL, HAVE TO FIND THE REAL PLAYER POOL (?????????????????????????????)
+  let returnMessage = "";
+  if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
+    returnMessage = "Can't throw pedestrians on player, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
+    client.action(channelName, "@" + username + " " + returnMessage);
+    return returnMessage;
+  }
+  rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
+  let playerPointer = 0;
+  let vehiclePointer = 0;
+  if (processObject == undefined) {
+    //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
+    returnMessage = "Can't throw pedestrians on player, game is not running, please request a refund!";
+    client.action(channelName, "@" + username + " " + returnMessage);
+    return returnMessage;
+  }
+  playerPointer = readFromAppMemory("Player Pointer").current_value;
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
+    //console.log("Don't do anything I guess");
+    //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
+    returnMessage = "Can't throw pedestrians on player, game is not ready, please request a refund!";
+    client.action(channelName, "@" + username + " " + returnMessage);
+    return returnMessage;
+  }
+  vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
+  let pedestrianPointerPool = readFromAppBuffer("Pedestrian Pool", getMemoryDataSize("Pedestrian Pool")).current_value;
+  let pedestrianPointerSize = 4;
+  let totalPedestriansInPool = getMemoryDataSize("Pedestrian Pool") / pedestrianPointerSize;
+
+  let playerLocationToDropPedestriansOn = {};
+  let vehicleLocationToDropPedestriansOn = {};
+  let pedestriansAlreadyUsed = [];
+
+  let pedestrianXPositionData = readFromAppMemory("Player Position X");
+  let pedestrianYPositionData = readFromAppMemory("Player Position Y");
+  let pedestrianZPositionData = readFromAppMemory("Player Position Z");
+  let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+  let initialZPositionDifference = 3; // Start first vehicle to drop 3 units higher than where the player is, to make sure no vehicles overlap each other, 3 units seems to be the most optmized height possible, Linerunner is the tallest vehicle in game, and with 3 units high, the vehicles will spawn right on top of the Linerunner with pretty much no space between the vehicles
+  //console.log(vehicleOptimizationFlag1Data);
+  //console.log(vehicleOptimizationFlag2Data);
+
+  // Get coordinates for player
+  playerLocationToDropPedestriansOn = {
+    playerPositionX: readFromAppPointer("Player Pointer", "Player Position X").current_value,
+    playerPositionY: readFromAppPointer("Player Pointer", "Player Position Y").current_value,
+    playerPositionZ: readFromAppPointer("Player Pointer", "Player Position Z").current_value,
+    playerSpeedX: readFromAppPointer("Player Pointer", "Player Speed X").current_value,
+    playerSpeedY: readFromAppPointer("Player Pointer", "Player Speed Y").current_value,
+    playerSpeedZ: readFromAppPointer("Player Pointer", "Player Speed Z").current_value,
+    playerHeading: readFromAppPointer("Player Pointer", "Player Heading").current_value
+  };
+  vehicleLocationToDropPedestriansOn = {
+    vehiclePositionX: playerLocationToDropPedestriansOn.playerPositionX,
+    vehiclePositionY: playerLocationToDropPedestriansOn.playerPositionY,
+    vehiclePositionZ: playerLocationToDropPedestriansOn.playerPositionZ,
+    vehicleSpeedX: playerLocationToDropPedestriansOn.playerSpeedX,
+    vehicleSpeedY: playerLocationToDropPedestriansOn.playerSpeedY,
+    vehicleSpeedZ: playerLocationToDropPedestriansOn.playerSpeedZ,
+    vehicleRotationNS: 1,
+    vehicleRotationEW: 0,
+    vehicleRotationTiltLR: 0,
+    vehicleRotationEW2: 0,
+    vehicleRotationNS2: 1,
+    vehicleRotationTiltUD: 0,
+    vehicleRotationSpeedX: 0,
+    vehicleRotationSpeedY: 0,
+    vehicleRotationSpeedZ: 0
+  };
+
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
+    vehiclePointerToFreeze = vehiclePointer;
+    // Get coordinates for vehicle player is driving
+    vehicleLocationToDropPedestriansOn = {
+      vehiclePositionX: readFromAppPointer("Vehicle Pointer", "Vehicle Position X").current_value,
+      vehiclePositionY: readFromAppPointer("Vehicle Pointer", "Vehicle Position Y").current_value,
+      vehiclePositionZ: readFromAppPointer("Vehicle Pointer", "Vehicle Position Z").current_value,
+      vehicleSpeedX: readFromAppPointer("Vehicle Pointer", "Vehicle Speed X").current_value,
+      vehicleSpeedY: readFromAppPointer("Vehicle Pointer", "Vehicle Speed Y").current_value,
+      vehicleSpeedZ: readFromAppPointer("Vehicle Pointer", "Vehicle Speed Z").current_value,
+      vehicleRotationNS: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS").current_value,
+      vehicleRotationEW: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation EW").current_value,
+      vehicleRotationTiltLR: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt LR").current_value,
+      vehicleRotationEW2: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation EW 2").current_value,
+      vehicleRotationNS2: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS 2").current_value,
+      vehicleRotationTiltUD: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt UD").current_value,
+      vehicleRotationSpeedX: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X").current_value,
+      vehicleRotationSpeedY: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y").current_value,
+      vehicleRotationSpeedZ: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Z").current_value,
+    };
+    playerLocationToDropPedestriansOn.playerPositionX = vehicleLocationToDropPedestriansOn.vehiclePositionX;
+    playerLocationToDropPedestriansOn.playerPositionY = vehicleLocationToDropPedestriansOn.vehiclePositionY;
+    playerLocationToDropPedestriansOn.playerPositionZ = vehicleLocationToDropPedestriansOn.vehiclePositionZ;
+    playerLocationToDropPedestriansOn.playerSpeedX = vehicleLocationToDropPedestriansOn.vehicleSpeedX;
+    playerLocationToDropPedestriansOn.playerSpeedY = vehicleLocationToDropPedestriansOn.vehicleSpeedY;
+    playerLocationToDropPedestriansOn.playerSpeedZ = vehicleLocationToDropPedestriansOn.vehicleSpeedZ;
+  }
+  //console.log(vehicleLocationToDropVehiclesOn.vehiclePositionX + "," + vehicleLocationToDropVehiclesOn.vehiclePositionY + "," + vehicleLocationToDropVehiclesOn.vehiclePositionZ);
+  initialZPositionDifference = vehicleLocationToDropPedestriansOn.vehiclePositionZ + 3;
+  //console.log(vehicleLocationToDropVehiclesOn.vehiclePositionX + "," + vehicleLocationToDropVehiclesOn.vehiclePositionY + "," + initialZPositionDifference);
+
+  for (let pedestrianInPoolIndex = 0; pedestrianInPoolIndex < totalPedestriansInPool; pedestrianInPoolIndex++) {
+    //let vehiclePointerValue = vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 0];
+    let pedestrianPointerToRead = pedestrianInPoolIndex;
+    let pedestrianPointerValue = (pedestrianPointerPool[(pedestrianPointerToRead * pedestrianPointerSize) + 3] << 24) | (pedestrianPointerPool[(pedestrianPointerToRead * pedestrianPointerSize) + 2] << 16) | (pedestrianPointerPool[(pedestrianPointerToRead * pedestrianPointerSize) + 1] << 8) | (pedestrianPointerPool[(pedestrianPointerToRead * pedestrianPointerSize) + 0]);
+    if (pedestrianPointerValue > startPointerAddress && pedestrianPointerValue < endPointerAddress) {
+      //console.log("pedestrianPointerToRead = " + pedestrianPointerToRead.toString().padStart(2, "0") + " , pedestrianPointerValue = 0x" + pedestrianPointerValue.toString("16").toUpperCase().padStart(8, "0"));
+      //let vehicleIdOffset = parseInt(readFromAppMemory("Vehicle ID").offset, 16);
+      //let vehicleXPositionOffset = parseInt(readFromAppMemory("Vehicle X Position").offset, 16);
+      //let vehicleYPositionOffset = parseInt(readFromAppMemory("Vehicle Y Position").offset, 16);
+      //let vehicleZPositionOffset = parseInt(readFromAppMemory("Vehicle Z Position").offset, 16);
+      //let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+      //let vehicleIdAddress = vehiclePointerValue + gameBaseAddress + vehicleIdOffset;
+      //console.log(vehicleId);
+      //console.log(vehicleIdToFind);
+      /*
+      if (vehiclePointerToRead == 56) {
+        console.log(vehiclePointerToRead);
+        console.log(vehicleId);
+      }
+      */
+      //console.log(vehiclePointerToRead);
+      //console.log(vehicleId);
+      //vehicleId = vehiclePointerValue + parseInt(gameMemory.base_address, 16);
+      //console.log(vehicleIdAddress.toString("16").toUpperCase().padStart(8, "0"));
+      /*
+      if (vehiclePointerValue == vehiclePointer) {
+        console.log("Ignore this vehicle!");
+      }
+      */
+      if (pedestrianPointerValue != playerPointer) {
+        let usedPedestrianToFindIndex = pedestriansAlreadyUsed.findIndex(element => element == pedestrianPointerValue);
+        /*
+        if (usedVehicleToFindIndex >= 0) {
+          console.log("[USED VEHICLE] usedVehicleToFindIndex = " + usedVehicleToFindIndex + ",vehiclesAlreadyUsed[usedVehicleToFindIndex] = 0x" + vehiclesAlreadyUsed[usedVehicleToFindIndex].toString("16").toUpperCase().padStart(8, "0"));
+          console.log("[USED VEHICLE] vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0") +  " , gameMemory.vehicle_data[vehicleIdToFind].name = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+        }
+        */
+        if (usedPedestrianToFindIndex <= -1) {
+          //console.log("usedVehicleToFindIndex = " + usedVehicleToFindIndex);
+          pedestriansAlreadyUsed.push(usedPedestrianToFindIndex);
+          //console.log(vehiclesAlreadyUsed);
+          //console.log("Don't ignore this vehicle!");
+          //console.log(vehicleXPositionData);
+          //console.log(vehicleYPositionData);
+          //console.log(vehicleZPositionData);
+          //let vehicleXPosition = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleXPositionData.offset, 16), vehicleXPositionData.data_type, undefined);
+          //let vehicleYPosition = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleYPositionData.offset, 16), vehicleYPositionData.data_type, undefined);
+          //let vehicleZPosition = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleZPositionData.offset, 16), vehicleZPositionData.data_type, undefined);
+          //console.log("BEFORE " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag1Data.offset, 16), vehicleOptimizationFlag1Data.data_type, undefined));
+          //console.log("BEFORE " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag2Data.offset, 16), vehicleOptimizationFlag2Data.data_type, undefined));
+          //console.log(vehicleXPosition + "," + vehicleYPosition + "," + vehicleZPosition);
+          //console.log(vehicleLocationToDropVehiclesOn.vehiclePositionX + "," + vehicleLocationToDropVehiclesOn.vehiclePositionY + "," + initialZPositionDifference);
+          //console.log((pedestrianPointerValue + gameBaseAddress).toString("16").toUpperCase().padStart(8, "0"));
+          writeToCustomMemoryAddress(pedestrianPointerValue + gameBaseAddress, parseInt(pedestrianXPositionData.offset, 16), vehicleLocationToDropPedestriansOn.vehiclePositionX, pedestrianXPositionData.data_type, undefined);
+          writeToCustomMemoryAddress(pedestrianPointerValue + gameBaseAddress, parseInt(pedestrianYPositionData.offset, 16), vehicleLocationToDropPedestriansOn.vehiclePositionY, pedestrianYPositionData.data_type, undefined);
+          writeToCustomMemoryAddress(pedestrianPointerValue + gameBaseAddress, parseInt(pedestrianZPositionData.offset, 16), initialZPositionDifference, pedestrianZPositionData.data_type, undefined);
+          //console.log("AFTER  " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag1Data.offset, 16), vehicleOptimizationFlag1Data.data_type, undefined));
+          //console.log("AFTER  " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag2Data.offset, 16), vehicleOptimizationFlag2Data.data_type, undefined));
+          //writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationSpeedZData.offset, 16), 10, vehicleRotationSpeedZData.data_type, undefined);
+          initialZPositionDifference = initialZPositionDifference + 3;
+          //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0") +  " , gameMemory.vehicle_data[vehicleIdToFind].name = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+        }
+      }
+      //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0") +  " , gameMemory.vehicle_data[vehicleIdToFind].name = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+      //console.log(vehiclePointerToRead.toString().padStart(2, "0") + " = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+      //console.log(parseInt(readFromAppMemory("Vehicle ID").offset, 16));
+    }
+  }
+  returnMessage = "Successfully threw all pedestrians on player!";
+  writeToNotificationBox(returnMessage);
+  client.action(channelName, "@" + username + " " + returnMessage);
+  return returnMessage;
+}
+
 function dropVehiclePoolOnPlayer(username, message, channelName, customRewardIndex) {
-  // DOES NOT WORK WITH OPTIMIZED TRAFFIC VEHICLES! (OR PARKED VEHICLES)
   let returnMessage = "";
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't throw vehicles on player, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
@@ -702,7 +892,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't throw vehicles on player, game is not ready, please request a refund!";
@@ -760,7 +950,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
     vehicleRotationSpeedZ: 0
   };
 
-  if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
     vehiclePointerToFreeze = vehiclePointer;
     // Get coordinates for vehicle player is driving
     vehicleLocationToDropVehiclesOn = {
@@ -795,7 +985,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
     //let vehiclePointerValue = vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 0];
     let vehiclePointerToRead = vehicleInPoolIndex;
     let vehiclePointerValue = (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 3] << 24) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 2] << 16) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 1] << 8) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 0]);
-    if (vehiclePointerValue > 0 && vehiclePointerValue < 0x02000000) {
+    if (vehiclePointerValue > startPointerAddress && vehiclePointerValue < endPointerAddress) {
       //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0"));
       //let vehicleIdOffset = parseInt(readFromAppMemory("Vehicle ID").offset, 16);
       //let vehicleXPositionOffset = parseInt(readFromAppMemory("Vehicle X Position").offset, 16);
@@ -901,7 +1091,7 @@ function freezeMovement(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't freeze movement, game is not ready, please request a refund!";
@@ -951,7 +1141,7 @@ function freezeMovement(username, message, channelName, customRewardIndex) {
     vehicleRotationSpeedY: 0,
     vehicleRotationSpeedZ: 0
   };
-  if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
     vehiclePointerToFreeze = vehiclePointer;
     // Freeze vehicle AND player
     vehicleLocationToFreezeObject = {
@@ -1037,7 +1227,7 @@ function changePlayerArmor(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change armor, game is not ready, please request a refund!";
@@ -1094,7 +1284,7 @@ function changeTime(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change time, game is not ready, please request a refund!";
@@ -1154,7 +1344,7 @@ function changeWantedLevel2(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change wanted level, game is not ready, please request a refund!";
@@ -1195,7 +1385,7 @@ function changeWantedLevel(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change wanted level, game is not ready, please request a refund!";
@@ -1273,7 +1463,7 @@ function takeWeaponsAway(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't take weapons away or return weapons back to player, game is not ready, please request a refund!";
@@ -1408,7 +1598,7 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spawn vehicle in garages, game is not ready, please request a refund!";
@@ -1522,21 +1712,21 @@ function changeRadioStation(username, message, channelName, customRewardIndex) {
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change radio station, game is not ready, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer <= 0 || vehiclePointer >= 0x02000000) {
+  if (vehiclePointer <= startPointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change radio station, player is not in a vehicle, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     let radioStationToFind = gameMemory.radio_data.findIndex(element => element.name.toLowerCase() == message.toLowerCase());
     console.log("radioStationToFind = " + radioStationToFind);
@@ -1585,7 +1775,7 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change speed, game is not ready, please request a refund!";
@@ -1597,7 +1787,7 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
     writeToAppPointer("Player Pointer", "Player Speed X", readFromAppPointer("Player Pointer", "Player Speed X").current_value * defaultMultiplier);
     writeToAppPointer("Player Pointer", "Player Speed Y", readFromAppPointer("Player Pointer", "Player Speed Y").current_value * defaultMultiplier);
     writeToAppPointer("Player Pointer", "Player Speed Z", readFromAppPointer("Player Pointer", "Player Speed Z").current_value * defaultMultiplier);
-    if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+    if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X", readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X").current_value * defaultMultiplier);
       writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y", readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y").current_value * defaultMultiplier);
@@ -1623,7 +1813,7 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
       writeToAppPointer("Player Pointer", "Player Speed X", readFromAppPointer("Player Pointer", "Player Speed X").current_value * defaultMultiplier);
       writeToAppPointer("Player Pointer", "Player Speed Y", readFromAppPointer("Player Pointer", "Player Speed Y").current_value * defaultMultiplier);
       writeToAppPointer("Player Pointer", "Player Speed Z", readFromAppPointer("Player Pointer", "Player Speed Z").current_value * defaultMultiplier);
-      if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+      if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
         //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
         writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X", readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X").current_value * defaultMultiplier);
         writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y", readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y").current_value * defaultMultiplier);
@@ -1652,7 +1842,7 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
       writeToAppPointer("Player Pointer", "Player Speed X", readFromAppPointer("Player Pointer", "Player Speed X").current_value * customMultiplier);
       writeToAppPointer("Player Pointer", "Player Speed Y", readFromAppPointer("Player Pointer", "Player Speed Y").current_value * customMultiplier);
       writeToAppPointer("Player Pointer", "Player Speed Z", readFromAppPointer("Player Pointer", "Player Speed Z").current_value * customMultiplier);
-      if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+      if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
         //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
         writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X", readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X").current_value * customMultiplier);
         writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y", readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y").current_value * customMultiplier);
@@ -1699,7 +1889,7 @@ function turnAround(username, message, channelName, customRewardIndex) {
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't turn around, game is not ready, please request a refund!";
@@ -1719,7 +1909,7 @@ function turnAround(username, message, channelName, customRewardIndex) {
   writeToAppPointer("Player Pointer", "Player Speed X", invertNumberSign(readFromAppPointer("Player Pointer", "Player Speed X").current_value));
   writeToAppPointer("Player Pointer", "Player Speed Y", invertNumberSign(readFromAppPointer("Player Pointer", "Player Speed Y").current_value));
   writeToAppPointer("Player Pointer", "Player Speed Z", invertNumberSign(readFromAppPointer("Player Pointer", "Vehicle Speed Z").current_value));
-  if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation NS", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS").current_value));
@@ -1740,14 +1930,14 @@ function turnAround(username, message, channelName, customRewardIndex) {
   client.action(channelName, "@" + username + " " + returnMessage);
   return returnMessage;
   /*
-  if (readFromAppMemory("Vehicle Pointer").current_value <= 0 || readFromAppMemory("Vehicle Pointer").current_value >= 0x02000000) {
+  if (readFromAppMemory("Vehicle Pointer").current_value <= startPointerAddress || readFromAppMemory("Vehicle Pointer").current_value >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     client.action(channelName, "@" + username + " Can't turn vehicle around, player is not in a vehicle, please request a refund!");
     return "Can't turn vehicle around, player is not in a vehicle, please request a refund!";
   }
   */
   /*
-  if (readFromAppMemory("Vehicle Pointer").current_value > 0 && readFromAppMemory("Vehicle Pointer").current_value < 0x02000000) {
+  if (readFromAppMemory("Vehicle Pointer").current_value > startPointerAddress && readFromAppMemory("Vehicle Pointer").current_value < endPointerAddress) {
     //console.log("Don't do anything I guess");
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation NS", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS").current_value));
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation EW", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation EW").current_value));
@@ -1792,21 +1982,21 @@ function flipVehicleUpsideDown(username, message, channelName, customRewardIndex
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't flip vehicle upside down, game is not ready, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer <= 0 || vehiclePointer >= 0x02000000) {
+  if (vehiclePointer <= startPointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't flip vehicle upside down, player is not in a vehicle, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation NS", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS").current_value));
@@ -1883,14 +2073,14 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle colors, game is not ready, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer <= 0 || vehiclePointer >= 0x02000000) {
+  if (vehiclePointer <= startPointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle colors, player is not in a vehicle, please request a refund!";
@@ -1990,21 +2180,21 @@ function spinCar(username, message, channelName, customRewardIndex) {
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicle, game is not ready, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer <= 0 || vehiclePointer >= 0x02000000) {
+  if (vehiclePointer <= startPointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     // rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicle, player is not in a vehicle, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+  if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "LET IT RIP!";
@@ -2040,14 +2230,14 @@ function changeVehicleHealth(username, message, channelName, customRewardIndex) 
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle health, game is not ready, please request a refund!";
     client.action(channelName, "@" + username + " " + returnMessage);
     return returnMessage;
   }
-  if (vehiclePointer <= 0 || vehiclePointer >= 0x02000000) {
+  if (vehiclePointer <= startPointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle health, player is not in a vehicle, please request a refund!";
@@ -2101,7 +2291,7 @@ function changePlayerHealth(username, message, channelName, customRewardIndex) {
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change health, game is not ready, please request a refund!";
@@ -2189,7 +2379,7 @@ function warpToLocation(coordX, coordY, coordZ, customRewardIndex) {
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
-  if (playerPointer <= 0 || playerPointer >= 0x02000000) {
+  if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     return "Can't warp, game is not ready, please request a refund!";
@@ -2210,7 +2400,7 @@ function warpToLocation(coordX, coordY, coordZ, customRewardIndex) {
     //writeToAppPointer("Player Pointer", "Player Speed Y", 0);
     //writeToAppPointer("Player Pointer", "Player Speed Z", 0);
     //writeToAppPointer("Player Pointer", "Player Heading", 0);
-    if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+    if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       // Set all speeds and rotations to 0 BEFORE warping
       //writeToAppPointer("Vehicle Pointer", "Vehicle Speed X", 0);
@@ -2264,7 +2454,7 @@ function warpToLocation(coordX, coordY, coordZ, customRewardIndex) {
     //writeToAppPointer("Player Pointer", "Player Speed Y", 0);
     //writeToAppPointer("Player Pointer", "Player Speed Z", 0);
     //writeToAppPointer("Player Pointer", "Player Heading", 0);
-    if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+    if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       // Set all speeds and rotations to 0 BEFORE warping
       //writeToAppPointer("Vehicle Pointer", "Vehicle Speed X", 0);
@@ -2318,7 +2508,7 @@ function warpToLocation(coordX, coordY, coordZ, customRewardIndex) {
     //writeToAppPointer("Player Pointer", "Player Speed Y", 0);
     //writeToAppPointer("Player Pointer", "Player Speed Z", 0);
     //writeToAppPointer("Player Pointer", "Player Heading", 0);
-    if (vehiclePointer > 0 && vehiclePointer < 0x02000000) {
+    if (vehiclePointer > startPointerAddress && vehiclePointer < endPointerAddress) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       // Set all speeds and rotations to 0 BEFORE warping
       //writeToAppPointer("Vehicle Pointer", "Vehicle Speed X", 0);
@@ -2374,7 +2564,7 @@ function writeToNotificationBox(text) {
   if (processObject == undefined) {
     return "Game is not running!";
   }
-  if (readFromAppMemory("Player Pointer").current_value <= 0 || readFromAppMemory("Player Pointer").current_value >= 0x02000000) {
+  if (readFromAppMemory("Player Pointer").current_value <= startPointerAddress || readFromAppMemory("Player Pointer").current_value >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     return "Game is not ready!";
   }

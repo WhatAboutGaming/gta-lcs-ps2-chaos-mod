@@ -155,7 +155,17 @@
       "custom_reward_id": "30089a56-c0f4-4351-9e38-885e5f9a2e27",
       "action": "drop_vehicle_pool_on_player",
       "timed_action": 0,
-      "countdown": 0,
+      "countdown": 59000,
+      "queued_action": false,
+      "wait_for_conditions_to_be_met": false,
+      "cooldown": 0
+    },
+        {
+      "reward_description": "Throw All Pedestrians On Player",
+      "custom_reward_id": "6fc2054d-3095-4a00-81fa-2e5e1ff0d729",
+      "action": "drop_pedestrian_pool_on_player",
+      "timed_action": 0,
+      "countdown": 59000,
       "queued_action": false,
       "wait_for_conditions_to_be_met": false,
       "cooldown": 0
