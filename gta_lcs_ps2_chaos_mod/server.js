@@ -16,6 +16,7 @@ var chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
 var rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
 var processName = gameMemory.process_name;
 var gameMemoryToDisplay = [];
+var gameMemoryToOverride = [];
 var freezeMovementState = false;
 var gameTimeMinutesObject = {};
 var gameTimeMinutesToUnfreeze = 0;
@@ -207,6 +208,12 @@ function keepMovementFrozen() {
 function overrideGameSettings() {
   // Override some game settings to specific values when player pointer changes to a valid address
   console.log(new Date().toISOString() + " Overriding game settings");
+  for (let gameMemoryToOverrideIndex = 0; gameMemoryToOverrideIndex < gameMemoryToOverride.length; gameMemoryToOverrideIndex++) {
+    //console.log(new Date().toISOString() + " [" + gameMemoryToOverrideIndex + "] Overriding " + gameMemoryToOverride[gameMemoryToOverrideIndex].address_name + " with " + gameMemoryToOverride[gameMemoryToOverrideIndex].value_to_override_with)
+    writeToAppMemory(gameMemoryToOverride[gameMemoryToOverrideIndex].address_name, gameMemoryToOverride[gameMemoryToOverrideIndex].value_to_override_with);
+    //console.log(new Date().toISOString() + " [" + gameMemoryToOverrideIndex + "] Overrode " + gameMemoryToOverride[gameMemoryToOverrideIndex].address_name + " with " + gameMemoryToOverride[gameMemoryToOverrideIndex].value_to_override_with)
+  }
+  /*
   writeToAppMemory("Brightness", 1024); // Turn brightness up high so twitch doesn't completely destroy the video quality of this dark game
   writeToAppMemory("Screen Position X", 0); // Set screen position to center
   writeToAppMemory("Screen Position Y", 0); // Set screen position to center
@@ -224,6 +231,7 @@ function overrideGameSettings() {
   writeToAppMemory("Invert Look Option", 0); // Invert X-Axis Look, 0 is ON for some reason
   writeToAppMemory("Controller Configuration Option", 0); // Use a controller configuration that's actually good for the PS2 controller (0 = Full PS2 controller support, 1 = PSP-like controls)
   writeToAppMemory("Controller Type", 0); // 0 = In car, 1 = On foot (This doesn't really change anything in the game, just displays how the controls are)
+  */
   console.log(new Date().toISOString() + " Overrode game settings");
 }
 
@@ -366,6 +374,7 @@ function checkIfAppExists() {
       memoryjs.closeProcess(processObject.handle);
       processObject = undefined;
       gameMemoryToDisplay = [];
+      gameMemoryToOverride = [];
       io.sockets.emit("game_memory_to_display", gameMemoryToDisplay);
       console.log("Process closed");
     }
@@ -379,6 +388,9 @@ function checkIfAppExists() {
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       processObject = memoryjs.openProcess(processName);
       for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
+        if (gameMemory.memory_data[gameMemoryObjectIndex].to_override == true) {
+          gameMemoryToOverride.push(gameMemory.memory_data[gameMemoryObjectIndex]);
+        }
         if (gameMemory.memory_data[gameMemoryObjectIndex].to_display == true) {
           //console.log(gameMemory.memory_data[gameMemoryObjectIndex]);
           gameMemoryToDisplay.push(gameMemory.memory_data[gameMemoryObjectIndex]);
@@ -2907,6 +2919,7 @@ io.sockets.on('connection',
     if (processObject == undefined) {
       console.log("Client connected, app NOT running");
       gameMemoryToDisplay = [];
+      gameMemoryToOverride = [];
       io.to(socket.id).emit("game_memory_to_display", gameMemoryToDisplay);
     }
     if (processObject != undefined) {
@@ -2914,7 +2927,11 @@ io.sockets.on('connection',
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       gameMemoryToDisplay = [];
+      gameMemoryToOverride = [];
       for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
+        if (gameMemory.memory_data[gameMemoryObjectIndex].to_override == true) {
+          gameMemoryToOverride.push(gameMemory.memory_data[gameMemoryObjectIndex]);
+        }
         if (gameMemory.memory_data[gameMemoryObjectIndex].to_display == true) {
           //console.log(gameMemory.memory_data[gameMemoryObjectIndex]);
           gameMemoryToDisplay.push(gameMemory.memory_data[gameMemoryObjectIndex]);
