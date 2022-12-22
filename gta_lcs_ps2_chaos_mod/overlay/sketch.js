@@ -1,5 +1,6 @@
 var socket;
 var soundEffects = [];
+var beyBladeSoundEffect;
 var gameMemoryToDisplay = [];
 var textToDisplay = "";
 var valueToDisplay = 0;
@@ -13,26 +14,26 @@ function preload() {
   font2 = loadFont("Pricedown.ttf"); // GTA font, not mono
   soundFormats("mp3");
   // For now the sound effects are hardcoded, maybe a better way would be to just look for all files that have the mp3 extension
-  soundEffects[0] = loadSound("bing_bong.mp3");
-  soundEffects[1] = loadSound("Taco_Bell_Bong.mp3");
-  soundEffects[2] = loadSound("beyblade.mp3");
-  soundEffects[3] = loadSound("we_got_him.mp3");
-  soundEffects[4] = loadSound("price_is_right_horn.mp3");
-  soundEffects[5] = loadSound("fail_sound.mp3");
-  soundEffects[6] = loadSound("bruh.mp3");
-  soundEffects[7] = loadSound("nelson_haha.mp3");
-  soundEffects[8] = loadSound("sad_trombone.mp3");
-  soundEffects[9] = loadSound("nice_job_dick_face.mp3");
-  soundEffects[10] = loadSound("smb_death.mp3");
-  soundEffects[11] = loadSound("smb_game_over.mp3");
-  soundEffects[12] = loadSound("smb_death_game_over.mp3");
-  soundEffects[13] = loadSound("smb_death_game_over_short.mp3");
-  soundEffects[14] = loadSound("pretty_stupid.mp3");
+  beyBladeSoundEffect = loadSound("beyblade.mp3");
+  soundEffects.push(loadSound("bing_bong.mp3"));
+  soundEffects.push(loadSound("Taco_Bell_Bong.mp3"));
+  soundEffects.push(loadSound("we_got_him.mp3"));
+  soundEffects.push(loadSound("price_is_right_horn.mp3"));
+  soundEffects.push(loadSound("fail_sound.mp3"));
+  soundEffects.push(loadSound("bruh.mp3"));
+  soundEffects.push(loadSound("nelson_haha.mp3"));
+  soundEffects.push(loadSound("sad_trombone.mp3"));
+  soundEffects.push(loadSound("nice_job_dick_face.mp3"));
+  soundEffects.push(loadSound("smb_death.mp3"));
+  soundEffects.push(loadSound("smb_game_over.mp3"));
+  soundEffects.push(loadSound("smb_death_game_over.mp3"));
+  soundEffects.push(loadSound("smb_death_game_over_short.mp3"));
+  soundEffects.push(loadSound("pretty_stupid.mp3"));
 }
 
 function setup() {
   noSmooth();
-  frameRate(60);
+  frameRate(30);
   createCanvas(1920, 1080);
   background("#00000000");
   socket = io.connect();
@@ -45,7 +46,7 @@ function setup() {
       soundEffects[1].play();
     }
     if (data == "Beyblade") {
-      soundEffects[2].play();
+      beyBladeSoundEffect.play();
     }
     if (data == "Random") {
       let randomSoundEffectIndex = Math.floor(Math.random() * soundEffects.length);

@@ -2374,13 +2374,13 @@ function warpToLocation(coordX, coordY, coordZ, customRewardIndex) {
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
   let playerPointer = 0;
   let vehiclePointer = 0;
-  if (coordX < -2000 || coordX > 2000 || coordY < -2000 || coordY > 2000 || coordZ < -200 || coordZ > 200) {
+  if (coordX < -1900 || coordX > 1900 || coordY < -1900 || coordY > 1900 || coordZ < -190 || coordZ > 190) {
     // Invalid coordinates that can crash the game
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
-    return "Invalid coordinate range, please make sure X and Y coordinates are between -2000 and 2000, and Z coordinate is between -200 and 200, please request a refund!";
+    return "Invalid coordinate range, please make sure X and Y coordinates are between -1900 and 1900, and Z coordinate is between -190 and 190, please request a refund!";
   }
   /*
-  if (coordX >= -2000 && coordX <= 2000 && coordY >= -2000 && coordY <= 2000 && coordZ >= -200 && coordZ <= 200) {
+  if (coordX >= -1900 && coordX <= 1900 && coordY >= -1900 && coordY <= 1900 && coordZ >= -190 && coordZ <= 190) {
     // Valid coordinates that certainly won't crash the game
     console.log("VALID!");
   }
