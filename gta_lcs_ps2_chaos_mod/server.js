@@ -363,6 +363,9 @@ function turnRadiansAround(rad) {
 setInterval(checkIfAppExists, 0);
 
 function findNewPcsx2BaseAddress() {
+  if (gameMemory.use_new_pcsx2_versions == false) {
+    return;
+  }
   console.log("Looking for the new PCSX2 EE Main Memory Base Address");
   pcsx2BaseAddresses[0] = readFromCustomMemoryAddress(pcsx2BaseAddressPointers[0], 0, "uint64", undefined); // No need to do a for loop because it's only 3 values, it's faster not to use a for loop here
   pcsx2BaseAddresses[1] = readFromCustomMemoryAddress(pcsx2BaseAddressPointers[1], 0, "uint64", undefined);
