@@ -1,7 +1,7 @@
 {
-  "process_name": "pcsx2.exe",
-  "base_address": "0x20000000",
-  "end_address": "0x22000000",
+  "process_name": "pcsx2-qtx64-avx2.exe",
+  "base_address": "0x00007FF720000000",
+  "end_address": "0x00007FF722A84000",
   "memory_data": [
     {
       "address_name": "Days passed in game 2",

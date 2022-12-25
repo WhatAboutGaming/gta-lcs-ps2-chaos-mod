@@ -40,6 +40,11 @@ var oldWeaponInventory = undefined;
 var startPointerAddress = 0x01000000;
 var endPointerAddress = 0x02000000;
 
+var pcsx2BaseAddressPointers = [0x7FF6FF793048, 0x7FF6FF793060, 0x7FF6FF793090]; // For now it's fine to have these hardcoded, if these ever start to change, I'll move those to the config files (Hopefully they'll only start changing in a few years, and not in a few days)
+var pcsx2BaseAddresses = ["0x0000000000000000", "0x0000000000000000", "0x0000000000000000"];
+var validAddressWherePcsx2PointersShouldStart = 0x00007FF000000000;
+var pcsx2RamSize = 0x02A84000;
+
 var client = new tmi.client(chatConfig);
 client.connect();
 
@@ -357,6 +362,43 @@ function turnRadiansAround(rad) {
 
 setInterval(checkIfAppExists, 0);
 
+function findNewPcsx2BaseAddress() {
+  console.log("Looking for the new PCSX2 EE Main Memory Base Address");
+  pcsx2BaseAddresses[0] = readFromCustomMemoryAddress(pcsx2BaseAddressPointers[0], 0, "uint64", undefined); // No need to do a for loop because it's only 3 values, it's faster not to use a for loop here
+  pcsx2BaseAddresses[1] = readFromCustomMemoryAddress(pcsx2BaseAddressPointers[1], 0, "uint64", undefined);
+  pcsx2BaseAddresses[2] = readFromCustomMemoryAddress(pcsx2BaseAddressPointers[2], 0, "uint64", undefined); // Address, offset (in this case offset has to be 0), data type (in this case data type is uint64), and index (normally used when reading directly from app memory, but unused here since we're doing a raw read)
+  console.log(gameMemory.base_address);
+  if (pcsx2BaseAddresses[0] < validAddressWherePcsx2PointersShouldStart) {
+    console.log("Invalid address, go to next");
+  }
+  if (pcsx2BaseAddresses[0] >= validAddressWherePcsx2PointersShouldStart) {
+    console.log("Valid address, nice");
+    gameMemory.base_address = "0x" + pcsx2BaseAddresses[0].toString("16").toUpperCase().padStart(16, "0");
+    gameMemory.end_address = "0x" + (pcsx2BaseAddresses[0] + pcsx2RamSize).toString("16").toUpperCase().padStart(16, "0");
+  }
+  if (pcsx2BaseAddresses[1] < validAddressWherePcsx2PointersShouldStart) {
+    console.log("Invalid address, go to next");
+  }
+  if (pcsx2BaseAddresses[1] >= validAddressWherePcsx2PointersShouldStart) {
+    console.log("Valid address, nice");
+    gameMemory.base_address = "0x" + pcsx2BaseAddresses[1].toString("16").toUpperCase().padStart(16, "0");
+    gameMemory.end_address = "0x" + (pcsx2BaseAddresses[1] + pcsx2RamSize).toString("16").toUpperCase().padStart(16, "0");
+  }
+  if (pcsx2BaseAddresses[2] < validAddressWherePcsx2PointersShouldStart) {
+    console.log("Invalid address, go to next");
+  }
+  if (pcsx2BaseAddresses[2] >= validAddressWherePcsx2PointersShouldStart) {
+    console.log("Valid address, nice");
+    gameMemory.base_address = "0x" + pcsx2BaseAddresses[2].toString("16").toUpperCase().padStart(16, "0");
+    gameMemory.end_address = "0x" + (pcsx2BaseAddresses[2] + pcsx2RamSize).toString("16").toUpperCase().padStart(16, "0");
+  }
+  console.log(pcsx2BaseAddressPointers);
+  console.log(pcsx2BaseAddresses);
+  console.log("BASE ADDRESS = " + gameMemory.base_address);
+  console.log("END ADDRESS = " + gameMemory.end_address);
+  console.log("Hopefully found the new PCSX2 EE Main Memory Base Address");
+}
+
 function checkIfAppExists() {
   if (processName == "") {
     return;
@@ -387,6 +429,7 @@ function checkIfAppExists() {
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       processObject = memoryjs.openProcess(processName);
+      findNewPcsx2BaseAddress();
       for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
         if (gameMemory.memory_data[gameMemoryObjectIndex].to_override == true) {
           gameMemoryToOverride.push(gameMemory.memory_data[gameMemoryObjectIndex]);
@@ -407,6 +450,7 @@ function checkIfAppExists() {
     if (playerPointerGlobal.current_value != playerPointerGlobal.old_value) {
       if (playerPointerGlobal.current_value >= startPointerAddress && playerPointerGlobal.current_value <= endPointerAddress) {
         console.log(new Date().toISOString() + " Player Pointer now changed to a valid address");
+        findNewPcsx2BaseAddress();
         overrideGameSettings();
       }
     }
@@ -2926,6 +2970,7 @@ io.sockets.on('connection',
       console.log("Client connected, app running");
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
+      findNewPcsx2BaseAddress();
       gameMemoryToDisplay = [];
       gameMemoryToOverride = [];
       for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
