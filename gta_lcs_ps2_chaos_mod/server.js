@@ -40,7 +40,7 @@ var oldWeaponInventory = undefined;
 var startPointerAddress = 0x01000000;
 var endPointerAddress = 0x02000000;
 
-var pcsx2BaseAddressPointers = [0x7FF6FF793048, 0x7FF6FF793060, 0x7FF6FF793090, 0x7FF70ACAA140]; // For now it's fine to have these hardcoded, if these ever start to change, I'll move those to the config files (Hopefully they'll only start changing in a few years, and not in a few days)
+var pcsx2BaseAddressPointers = [0x7FF6FF793048, 0x7FF6FF793060, 0x7FF6FF793090, 0x7FF70ACAA140]; // For now it's fine to have these hardcoded, if these ever start to change, I'll move those to the config files (Hopefully they'll only start changing in a few years, and not in a few days) (IT ALREADY BROKE, ITS IMPOSSIBLE TO FIND THE BASE ADDRESS)
 var pcsx2BaseAddresses = [0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000];
 var validAddressWherePcsx2PointersShouldStart = 0x00007FF000000000;
 var pcsx2RamSize = 0x02A84000;
