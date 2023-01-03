@@ -1720,6 +1720,7 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
   }
   //console.log("vehicleFlagsValue = " + vehicleFlagsValue);
   console.log("vehicleId = " + gameMemory.vehicle_data[vehicleToFind].id);
+  console.log("vehicleName = " + gameMemory.vehicle_data[vehicleToFind].name);
   // Lines below belong to Portland Garage (First Island)
   writeToAppMemory("Vehicle 3 In Portland Garage ID", gameMemory.vehicle_data[vehicleToFind].id);
   writeToAppMemory("Vehicle 3 In Portland Garage Position X", gameMemory.spawn_vehicle_portland_garage_data.position_x);
@@ -1740,6 +1741,16 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
   writeToAppMemory("Vehicle 3 In Staunton Garage Rotation Z", gameMemory.spawn_vehicle_staunton_garage_data.rotation_z);
   writeToAppMemory("Vehicle 3 In Staunton Garage Rotation W", gameMemory.spawn_vehicle_staunton_garage_data.rotation_w);
   writeToAppMemory("Vehicle 3 In Staunton Garage Flags", vehicleFlagsValue);
+  // Lines below belong to Shoreside Vale Garage (Third Island)
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage ID", gameMemory.vehicle_data[vehicleToFind].id);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Position X", gameMemory.spawn_vehicle_shoreside_vale_garage_data.position_x);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Position Y", gameMemory.spawn_vehicle_shoreside_vale_garage_data.position_y);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Position Z", gameMemory.spawn_vehicle_shoreside_vale_garage_data.position_z);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Rotation X", gameMemory.spawn_vehicle_shoreside_vale_garage_data.rotation_x);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Rotation Y", gameMemory.spawn_vehicle_shoreside_vale_garage_data.rotation_y);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Rotation Z", gameMemory.spawn_vehicle_shoreside_vale_garage_data.rotation_z);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Rotation W", gameMemory.spawn_vehicle_shoreside_vale_garage_data.rotation_w);
+  writeToAppMemory("Vehicle 3 In Shoreside Vale Garage Flags", vehicleFlagsValue);
   //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
   //console.log("Don't do anything I guess");
   if (vehicleFlagsStringArray.length > 0) {
