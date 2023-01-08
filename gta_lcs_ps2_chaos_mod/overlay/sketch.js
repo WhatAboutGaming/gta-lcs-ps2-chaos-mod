@@ -8,12 +8,17 @@ var currentValueToDisplay = 0;
 var textTransparency = 255; // range from 0 to 255
 var secondCurrent = 0;
 var secondOld = 0;
+var mp3FilesListObject = {
+  mp3_files_list: [],
+  beyblade_filename: ""
+};
 
 function preload() {
   font = loadFont("VCREAS_3.0.ttf"); // Pixel perfect font, set to 20 points for crispy pixel perfectness, mono font
   font2 = loadFont("Pricedown.ttf"); // GTA font, not mono
   soundFormats("mp3");
-  // For now the sound effects are hardcoded, maybe a better way would be to just look for all files that have the mp3 extension
+  // For now the sound effects are hardcoded, maybe a better way would be to just look for all files that have the mp3 extension (Done, this is done on server side, then the server sends the list to the overlay when the overlay connects to the server, which then loads the MP3 files)
+  /*
   beyBladeSoundEffect = loadSound("beyblade.mp3");
   soundEffects.push(loadSound("bing_bong.mp3"));
   soundEffects.push(loadSound("Taco_Bell_Bong.mp3"));
@@ -29,22 +34,17 @@ function preload() {
   soundEffects.push(loadSound("smb_death_game_over.mp3"));
   soundEffects.push(loadSound("smb_death_game_over_short.mp3"));
   soundEffects.push(loadSound("pretty_stupid.mp3"));
+  */
 }
 
 function setup() {
   noSmooth();
-  frameRate(30);
+  frameRate(60);
   createCanvas(1920, 1080);
   background("#00000000");
   socket = io.connect();
   socket.on("play_sound", function(data) {
     //console.log(new Date().toISOString() + " " + data);
-    if (data == "BingBong") {
-      soundEffects[0].play();
-    }
-    if (data == "TacoBellBong") {
-      soundEffects[1].play();
-    }
     if (data == "Beyblade") {
       beyBladeSoundEffect.play();
     }
@@ -73,6 +73,16 @@ function setup() {
     console.log("Received new array");
     gameMemoryToDisplay = data;
     console.log(gameMemoryToDisplay);
+  });
+  socket.on("mp3_files_list_object", function(data) {
+    console.log("Received MP3 files list");
+    mp3FilesListObject = data;
+    console.log(mp3FilesListObject);
+    beyBladeSoundEffect = loadSound(mp3FilesListObject.beyblade_filename);
+    for (let mp3FilesListIndex = 0; mp3FilesListIndex < mp3FilesListObject.mp3_files_list.length; mp3FilesListIndex++) {
+      //console.log(mp3FilesListObject.mp3_files_list[mp3FilesListIndex]);
+      soundEffects[mp3FilesListIndex] = loadSound(mp3FilesListObject.mp3_files_list[mp3FilesListIndex]);
+    }
   });
 }
 
