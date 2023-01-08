@@ -14,6 +14,11 @@ var rewardsConfigFileName = "rewards_config_lcs.json";
 var gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
 var chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
 var rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
+var beybladeSfxFileName = "beyblade.mp3";
+var mp3FileExtension = ".mp3";
+var overlayFilesList = fs.readdirSync(__dirname + "//" + "overlay");
+var overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === mp3FileExtension);
+overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
 var processName = gameMemory.process_name;
 var gameMemoryToDisplay = [];
 var gameMemoryToOverride = [];
@@ -29,6 +34,3082 @@ var playerLocationToFreezeObject = {};
 var vehicleLocationToFreezeObject = {};
 var lastChannelName = "";
 var playerPointerGlobal = {};
+
+var characterData = [{
+    character_replacement_string: "\u0000",
+    description: "Null",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0001",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0002",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0003",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0004",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0005",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0006",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0007",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0008",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0009",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0010",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0011",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0012",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0013",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0014",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0015",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0016",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0017",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0018",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0019",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0020",
+    description: "Space",
+    is_enabled: false,
+    character_original_string: /\s/ig
+  },
+  {
+    character_replacement_string: "\u0021",
+    description: "Exclamation Mark",
+    is_enabled: true,
+    character_original_string: /\!/ig
+  },
+  {
+    character_replacement_string: "\u0022",
+    description: "Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\"/ig
+  },
+  {
+    character_replacement_string: "\u0023",
+    description: "Number Sign",
+    is_enabled: true,
+    character_original_string: /\#/ig
+  },
+  {
+    character_replacement_string: "\u0024",
+    description: "Dollar Sign",
+    is_enabled: true,
+    character_original_string: /\$/ig
+  },
+  {
+    character_replacement_string: "\u0025",
+    description: "Percent Sign",
+    is_enabled: true,
+    character_original_string: /\%/ig
+  },
+  {
+    character_replacement_string: "\u0026",
+    description: "Ampersand",
+    is_enabled: true,
+    character_original_string: /\&/ig
+  },
+  {
+    character_replacement_string: "\u0027",
+    description: "Apostrophe",
+    is_enabled: true,
+    character_original_string: /\'/ig
+  },
+  {
+    character_replacement_string: "\u0028",
+    description: "Left Parenthesis",
+    is_enabled: true,
+    character_original_string: /\(/ig
+  },
+  {
+    character_replacement_string: "\u0029",
+    description: "Right Parenthesis",
+    is_enabled: true,
+    character_original_string: /\)/ig
+  },
+  {
+    character_replacement_string: "\u002A",
+    description: "Asterisk",
+    is_enabled: true,
+    character_original_string: /\*/ig
+  },
+  {
+    character_replacement_string: "\u002B",
+    description: "Plus Sign",
+    is_enabled: true,
+    character_original_string: /\+/ig
+  },
+  {
+    character_replacement_string: "\u002C",
+    description: "Comma",
+    is_enabled: true,
+    character_original_string: /\,/ig
+  },
+  {
+    character_replacement_string: "\u002D",
+    description: "Hyphen-Minus",
+    is_enabled: true,
+    character_original_string: /\-/ig
+  },
+  {
+    character_replacement_string: "\u002E",
+    description: "Full Stop",
+    is_enabled: true,
+    character_original_string: /\./ig
+  },
+  {
+    character_replacement_string: "\u002F",
+    description: "Solidus",
+    is_enabled: true,
+    character_original_string: /\//ig
+  },
+  {
+    character_replacement_string: "\u0030",
+    description: "Digit Zero",
+    is_enabled: true,
+    character_original_string: /0/ig
+  },
+  {
+    character_replacement_string: "\u0031",
+    description: "Digit One",
+    is_enabled: true,
+    character_original_string: /1/ig
+  },
+  {
+    character_replacement_string: "\u0032",
+    description: "Digit Two",
+    is_enabled: true,
+    character_original_string: /2/ig
+  },
+  {
+    character_replacement_string: "\u0033",
+    description: "Digit Three",
+    is_enabled: true,
+    character_original_string: /3/ig
+  },
+  {
+    character_replacement_string: "\u0034",
+    description: "Digit Four",
+    is_enabled: true,
+    character_original_string: /4/ig
+  },
+  {
+    character_replacement_string: "\u0035",
+    description: "Digit Five",
+    is_enabled: true,
+    character_original_string: /5/ig
+  },
+  {
+    character_replacement_string: "\u0036",
+    description: "Digit Six",
+    is_enabled: true,
+    character_original_string: /6/ig
+  },
+  {
+    character_replacement_string: "\u0037",
+    description: "Digit Seven",
+    is_enabled: true,
+    character_original_string: /7/ig
+  },
+  {
+    character_replacement_string: "\u0038",
+    description: "Digit Eight",
+    is_enabled: true,
+    character_original_string: /8/ig
+  },
+  {
+    character_replacement_string: "\u0039",
+    description: "Digit Nine",
+    is_enabled: true,
+    character_original_string: /9/ig
+  },
+  {
+    character_replacement_string: "\u003A",
+    description: "Colon",
+    is_enabled: true,
+    character_original_string: /\:/ig
+  },
+  {
+    character_replacement_string: "\u003B",
+    description: "Semicolon",
+    is_enabled: true,
+    character_original_string: /\;/ig
+  },
+  {
+    character_replacement_string: "\u003C",
+    description: "Less-Than Sign",
+    is_enabled: true,
+    character_original_string: /\</ig
+  },
+  {
+    character_replacement_string: "\u003D",
+    description: "Equals Sign",
+    is_enabled: true,
+    character_original_string: /\=/ig
+  },
+  {
+    character_replacement_string: "\u003E",
+    description: "Greater-Than Sign",
+    is_enabled: true,
+    character_original_string: /\>/ig
+  },
+  {
+    character_replacement_string: "\u003F",
+    description: "Question Mark",
+    is_enabled: true,
+    character_original_string: /\?/ig
+  },
+  {
+    character_replacement_string: "\u0040",
+    description: "Commercial At",
+    is_enabled: true,
+    character_original_string: /\@/ig
+  },
+  {
+    character_replacement_string: "\u0041",
+    description: "Latin Capital Letter A",
+    is_enabled: true,
+    character_original_string: /A/g
+  },
+  {
+    character_replacement_string: "\u0042",
+    description: "Latin Capital Letter B",
+    is_enabled: true,
+    character_original_string: /B/g
+  },
+  {
+    character_replacement_string: "\u0043",
+    description: "Latin Capital Letter C",
+    is_enabled: true,
+    character_original_string: /C/g
+  },
+  {
+    character_replacement_string: "\u0044",
+    description: "Latin Capital Letter D",
+    is_enabled: true,
+    character_original_string: /D/g
+  },
+  {
+    character_replacement_string: "\u0045",
+    description: "Latin Capital Letter E",
+    is_enabled: true,
+    character_original_string: /E/g
+  },
+  {
+    character_replacement_string: "\u0046",
+    description: "Latin Capital Letter F",
+    is_enabled: true,
+    character_original_string: /F/g
+  },
+  {
+    character_replacement_string: "\u0047",
+    description: "Latin Capital Letter G",
+    is_enabled: true,
+    character_original_string: /G/g
+  },
+  {
+    character_replacement_string: "\u0048",
+    description: "Latin Capital Letter H",
+    is_enabled: true,
+    character_original_string: /H/g
+  },
+  {
+    character_replacement_string: "\u0049",
+    description: "Latin Capital Letter I",
+    is_enabled: true,
+    character_original_string: /I/g
+  },
+  {
+    character_replacement_string: "\u004A",
+    description: "Latin Capital Letter J",
+    is_enabled: true,
+    character_original_string: /J/g
+  },
+  {
+    character_replacement_string: "\u004B",
+    description: "Latin Capital Letter K",
+    is_enabled: true,
+    character_original_string: /K/g
+  },
+  {
+    character_replacement_string: "\u004C",
+    description: "Latin Capital Letter L",
+    is_enabled: true,
+    character_original_string: /L/g
+  },
+  {
+    character_replacement_string: "\u004D",
+    description: "Latin Capital Letter M",
+    is_enabled: true,
+    character_original_string: /M/g
+  },
+  {
+    character_replacement_string: "\u004E",
+    description: "Latin Capital Letter N",
+    is_enabled: true,
+    character_original_string: /N/g
+  },
+  {
+    character_replacement_string: "\u004F",
+    description: "Latin Capital Letter O",
+    is_enabled: true,
+    character_original_string: /O/g
+  },
+  {
+    character_replacement_string: "\u0050",
+    description: "Latin Capital Letter P",
+    is_enabled: true,
+    character_original_string: /P/g
+  },
+  {
+    character_replacement_string: "\u0051",
+    description: "Latin Capital Letter Q",
+    is_enabled: true,
+    character_original_string: /Q/g
+  },
+  {
+    character_replacement_string: "\u0052",
+    description: "Latin Capital Letter R",
+    is_enabled: true,
+    character_original_string: /R/g
+  },
+  {
+    character_replacement_string: "\u0053",
+    description: "Latin Capital Letter S",
+    is_enabled: true,
+    character_original_string: /S/g
+  },
+  {
+    character_replacement_string: "\u0054",
+    description: "Latin Capital Letter T",
+    is_enabled: true,
+    character_original_string: /T/g
+  },
+  {
+    character_replacement_string: "\u0055",
+    description: "Latin Capital Letter U",
+    is_enabled: true,
+    character_original_string: /U/g
+  },
+  {
+    character_replacement_string: "\u0056",
+    description: "Latin Capital Letter V",
+    is_enabled: true,
+    character_original_string: /V/g
+  },
+  {
+    character_replacement_string: "\u0057",
+    description: "Latin Capital Letter W",
+    is_enabled: true,
+    character_original_string: /W/g
+  },
+  {
+    character_replacement_string: "\u0058",
+    description: "Latin Capital Letter X",
+    is_enabled: true,
+    character_original_string: /X/g
+  },
+  {
+    character_replacement_string: "\u0059",
+    description: "Latin Capital Letter Y",
+    is_enabled: true,
+    character_original_string: /Y/g
+  },
+  {
+    character_replacement_string: "\u005A",
+    description: "Latin Capital Letter Z",
+    is_enabled: true,
+    character_original_string: /Z/g
+  },
+  {
+    character_replacement_string: "\u005B",
+    description: "Left Square Bracket",
+    is_enabled: true,
+    character_original_string: /\[/ig
+  },
+  {
+    character_replacement_string: "\u005C",
+    description: "Reverse Solidus",
+    is_enabled: true,
+    character_original_string: /\\/ig
+  },
+  {
+    character_replacement_string: "\u005D",
+    description: "Right Square Bracket",
+    is_enabled: true,
+    character_original_string: /\]/ig
+  },
+  {
+    character_replacement_string: "\u005E",
+    description: "Circumflex Accent",
+    is_enabled: true,
+    character_original_string: /\^/ig
+  },
+  {
+    character_replacement_string: "\u005F",
+    description: "Low Line",
+    is_enabled: true,
+    character_original_string: /\_/ig
+  },
+  {
+    character_replacement_string: "\u0060",
+    description: "Grave Accent",
+    is_enabled: true,
+    character_original_string: /\`/ig
+  },
+  {
+    character_replacement_string: "\u0061",
+    description: "Latin Small Letter A",
+    is_enabled: true,
+    character_original_string: /a/g
+  },
+  {
+    character_replacement_string: "\u0062",
+    description: "Latin Small Letter B",
+    is_enabled: true,
+    character_original_string: /b/g
+  },
+  {
+    character_replacement_string: "\u0063",
+    description: "Latin Small Letter C",
+    is_enabled: true,
+    character_original_string: /c/g
+  },
+  {
+    character_replacement_string: "\u0064",
+    description: "Latin Small Letter D",
+    is_enabled: true,
+    character_original_string: /d/g
+  },
+  {
+    character_replacement_string: "\u0065",
+    description: "Latin Small Letter E",
+    is_enabled: true,
+    character_original_string: /e/g
+  },
+  {
+    character_replacement_string: "\u0066",
+    description: "Latin Small Letter F",
+    is_enabled: true,
+    character_original_string: /f/g
+  },
+  {
+    character_replacement_string: "\u0067",
+    description: "Latin Small Letter G",
+    is_enabled: true,
+    character_original_string: /g/g
+  },
+  {
+    character_replacement_string: "\u0068",
+    description: "Latin Small Letter H",
+    is_enabled: true,
+    character_original_string: /h/g
+  },
+  {
+    character_replacement_string: "\u0069",
+    description: "Latin Small Letter I",
+    is_enabled: true,
+    character_original_string: /i/g
+  },
+  {
+    character_replacement_string: "\u006A",
+    description: "Latin Small Letter J",
+    is_enabled: true,
+    character_original_string: /j/g
+  },
+  {
+    character_replacement_string: "\u006B",
+    description: "Latin Small Letter K",
+    is_enabled: true,
+    character_original_string: /k/g
+  },
+  {
+    character_replacement_string: "\u006C",
+    description: "Latin Small Letter L",
+    is_enabled: true,
+    character_original_string: /l/g
+  },
+  {
+    character_replacement_string: "\u006D",
+    description: "Latin Small Letter M",
+    is_enabled: true,
+    character_original_string: /m/g
+  },
+  {
+    character_replacement_string: "\u006E",
+    description: "Latin Small Letter N",
+    is_enabled: true,
+    character_original_string: /n/g
+  },
+  {
+    character_replacement_string: "\u006F",
+    description: "Latin Small Letter O",
+    is_enabled: true,
+    character_original_string: /o/g
+  },
+  {
+    character_replacement_string: "\u0070",
+    description: "Latin Small Letter P",
+    is_enabled: true,
+    character_original_string: /p/g
+  },
+  {
+    character_replacement_string: "\u0071",
+    description: "Latin Small Letter Q",
+    is_enabled: true,
+    character_original_string: /q/g
+  },
+  {
+    character_replacement_string: "\u0072",
+    description: "Latin Small Letter R",
+    is_enabled: true,
+    character_original_string: /r/g
+  },
+  {
+    character_replacement_string: "\u0073",
+    description: "Latin Small Letter S",
+    is_enabled: true,
+    character_original_string: /s/g
+  },
+  {
+    character_replacement_string: "\u0074",
+    description: "Latin Small Letter T",
+    is_enabled: true,
+    character_original_string: /t/g
+  },
+  {
+    character_replacement_string: "\u0075",
+    description: "Latin Small Letter U",
+    is_enabled: true,
+    character_original_string: /u/g
+  },
+  {
+    character_replacement_string: "\u0076",
+    description: "Latin Small Letter V",
+    is_enabled: true,
+    character_original_string: /v/g
+  },
+  {
+    character_replacement_string: "\u0077",
+    description: "Latin Small Letter W",
+    is_enabled: true,
+    character_original_string: /w/g
+  },
+  {
+    character_replacement_string: "\u0078",
+    description: "Latin Small Letter X",
+    is_enabled: true,
+    character_original_string: /x/g
+  },
+  {
+    character_replacement_string: "\u0079",
+    description: "Latin Small Letter Y",
+    is_enabled: true,
+    character_original_string: /y/g
+  },
+  {
+    character_replacement_string: "\u007A",
+    description: "Latin Small Letter Z",
+    is_enabled: true,
+    character_original_string: /z/g
+  },
+  {
+    character_replacement_string: "\u007B",
+    description: "Left Curly Bracket",
+    is_enabled: true,
+    character_original_string: /\{/ig
+  },
+  {
+    character_replacement_string: "\u007C",
+    description: "Vertical Line",
+    is_enabled: true,
+    character_original_string: /\|/ig
+  },
+  {
+    character_replacement_string: "\u007D",
+    description: "Right Curly Bracket",
+    is_enabled: true,
+    character_original_string: /\}/ig
+  },
+  {
+    character_replacement_string: "\u007E",
+    description: "Tilde",
+    is_enabled: false,
+    character_original_string: /\~/ig
+  },
+  {
+    character_replacement_string: "\u007F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0080",
+    description: "Latin Capital Letter A With Grave",
+    is_enabled: true,
+    character_original_string: /À/g
+  },
+  {
+    character_replacement_string: "\u0081",
+    description: "Latin Capital Letter A With Acute",
+    is_enabled: true,
+    character_original_string: /Á/g
+  },
+  {
+    character_replacement_string: "\u0082",
+    description: "Latin Capital Letter A With Circumflex",
+    is_enabled: true,
+    character_original_string: /Â/g
+  },
+  {
+    character_replacement_string: "\u0083",
+    description: "Latin Capital Letter A With Tilde",
+    is_enabled: true,
+    character_original_string: /Ã/g
+  },
+  {
+    character_replacement_string: "\u0084",
+    description: "Latin Capital Letter A With Diaeresis",
+    is_enabled: true,
+    character_original_string: /Ä/g
+  },
+  {
+    character_replacement_string: "\u0085",
+    description: "Latin Capital Letter A With Ring Above",
+    is_enabled: true,
+    character_original_string: /Å/g
+  },
+  {
+    character_replacement_string: "\u0086",
+    description: "Latin Capital Letter Ae",
+    is_enabled: true,
+    character_original_string: /Æ/g
+  },
+  {
+    character_replacement_string: "\u0087",
+    description: "Latin Capital Letter C With Cedilla",
+    is_enabled: true,
+    character_original_string: /Ç/g
+  },
+  {
+    character_replacement_string: "\u0088",
+    description: "Latin Capital Letter E With Grave",
+    is_enabled: true,
+    character_original_string: /È/g
+  },
+  {
+    character_replacement_string: "\u0089",
+    description: "Latin Capital Letter E With Acute",
+    is_enabled: true,
+    character_original_string: /É/g
+  },
+  {
+    character_replacement_string: "\u008A",
+    description: "Latin Capital Letter E With Circumflex",
+    is_enabled: true,
+    character_original_string: /Ê/g
+  },
+  {
+    character_replacement_string: "\u008B",
+    description: "Latin Capital Letter E With Diaeresis",
+    is_enabled: true,
+    character_original_string: /Ë/g
+  },
+  {
+    character_replacement_string: "\u008C",
+    description: "Latin Capital Letter I With Grave",
+    is_enabled: true,
+    character_original_string: /Ì/g
+  },
+  {
+    character_replacement_string: "\u008D",
+    description: "Latin Capital Letter I With Acute",
+    is_enabled: true,
+    character_original_string: /Í/g
+  },
+  {
+    character_replacement_string: "\u008E",
+    description: "Latin Capital Letter I With Circumflex",
+    is_enabled: true,
+    character_original_string: /Î/g
+  },
+  {
+    character_replacement_string: "\u008F",
+    description: "Latin Capital Letter I With Diaeresis",
+    is_enabled: true,
+    character_original_string: /Ï/g
+  },
+  {
+    character_replacement_string: "\u0090",
+    description: "Latin Capital Letter Eth",
+    is_enabled: true,
+    character_original_string: /Ð/g
+  },
+  {
+    character_replacement_string: "\u0091",
+    description: "Latin Capital Letter N With Tilde",
+    is_enabled: true,
+    character_original_string: /Ñ/g
+  },
+  {
+    character_replacement_string: "\u0092",
+    description: "Latin Capital Letter O With Grave",
+    is_enabled: true,
+    character_original_string: /Ò/g
+  },
+  {
+    character_replacement_string: "\u0093",
+    description: "Latin Capital Letter O With Acute",
+    is_enabled: true,
+    character_original_string: /Ó/g
+  },
+  {
+    character_replacement_string: "\u0094",
+    description: "Latin Capital Letter O With Circumflex",
+    is_enabled: true,
+    character_original_string: /Ô/g
+  },
+  {
+    character_replacement_string: "\u0095",
+    description: "Latin Capital Letter O With Tilde",
+    is_enabled: true,
+    character_original_string: /Õ/g
+  },
+  {
+    character_replacement_string: "\u0096",
+    description: "Latin Capital Letter O With Diaeresis",
+    is_enabled: true,
+    character_original_string: /Ö/g
+  },
+  {
+    character_replacement_string: "\u0097",
+    description: "Multiplication Sign",
+    is_enabled: true,
+    character_original_string: /\×/ig
+  },
+  {
+    character_replacement_string: "\u0098",
+    description: "Latin Capital Letter O With Stroke",
+    is_enabled: true,
+    character_original_string: /Ø/g
+  },
+  {
+    character_replacement_string: "\u0099",
+    description: "Latin Capital Letter U With Grave",
+    is_enabled: true,
+    character_original_string: /Ù/g
+  },
+  {
+    character_replacement_string: "\u009A",
+    description: "Latin Capital Letter U With Acute",
+    is_enabled: true,
+    character_original_string: /Ú/g
+  },
+  {
+    character_replacement_string: "\u009B",
+    description: "Latin Capital Letter U With Circumflex",
+    is_enabled: true,
+    character_original_string: /Û/g
+  },
+  {
+    character_replacement_string: "\u009C",
+    description: "Latin Capital Letter U With Diaeresis",
+    is_enabled: true,
+    character_original_string: /Ü/g
+  },
+  {
+    character_replacement_string: "\u009D",
+    description: "Latin Capital Letter Y With Acute",
+    is_enabled: true,
+    character_original_string: /Ý/g
+  },
+  {
+    character_replacement_string: "\u009E",
+    description: "Latin Capital Letter Thorn",
+    is_enabled: true,
+    character_original_string: /Þ/g
+  },
+  {
+    character_replacement_string: "\u009F",
+    description: "Latin Small Letter Sharp S",
+    is_enabled: true,
+    character_original_string: /ß/g
+  },
+  {
+    character_replacement_string: "\u00A0",
+    description: "Latin Small Letter A With Grave",
+    is_enabled: true,
+    character_original_string: /à/g
+  },
+  {
+    character_replacement_string: "\u00A1",
+    description: "Latin Small Letter A With Acute",
+    is_enabled: true,
+    character_original_string: /á/g
+  },
+  {
+    character_replacement_string: "\u00A2",
+    description: "Latin Small Letter A With Circumflex",
+    is_enabled: true,
+    character_original_string: /â/g
+  },
+  {
+    character_replacement_string: "\u00A3",
+    description: "Latin Small Letter A With Tilde",
+    is_enabled: true,
+    character_original_string: /ã/g
+  },
+  {
+    character_replacement_string: "\u00A4",
+    description: "Latin Small Letter A With Diaeresis",
+    is_enabled: true,
+    character_original_string: /ä/g
+  },
+  {
+    character_replacement_string: "\u00A5",
+    description: "Latin Small Letter A With Ring Above",
+    is_enabled: true,
+    character_original_string: /å/g
+  },
+  {
+    character_replacement_string: "\u00A6",
+    description: "Latin Small Letter Ae",
+    is_enabled: true,
+    character_original_string: /æ/g
+  },
+  {
+    character_replacement_string: "\u00A7",
+    description: "Latin Small Letter C With Cedilla",
+    is_enabled: true,
+    character_original_string: /ç/g
+  },
+  {
+    character_replacement_string: "\u00A8",
+    description: "Latin Small Letter E With Grave",
+    is_enabled: true,
+    character_original_string: /è/g
+  },
+  {
+    character_replacement_string: "\u00A9",
+    description: "Latin Small Letter E With Acute",
+    is_enabled: true,
+    character_original_string: /é/g
+  },
+  {
+    character_replacement_string: "\u00AA",
+    description: "Latin Small Letter E With Circumflex",
+    is_enabled: true,
+    character_original_string: /ê/g
+  },
+  {
+    character_replacement_string: "\u00AB",
+    description: "Latin Small Letter E With Diaeresis",
+    is_enabled: true,
+    character_original_string: /ë/g
+  },
+  {
+    character_replacement_string: "\u00AC",
+    description: "Latin Small Letter I With Grave",
+    is_enabled: true,
+    character_original_string: /ì/g
+  },
+  {
+    character_replacement_string: "\u00AD",
+    description: "Latin Small Letter I With Acute",
+    is_enabled: true,
+    character_original_string: /í/g
+  },
+  {
+    character_replacement_string: "\u00AE",
+    description: "Latin Small Letter I With Circumflex",
+    is_enabled: true,
+    character_original_string: /î/g
+  },
+  {
+    character_replacement_string: "\u00AF",
+    description: "Latin Small Letter I With Diaeresis",
+    is_enabled: true,
+    character_original_string: /ï/g
+  },
+  {
+    character_replacement_string: "\u00B0",
+    description: "Latin Small Letter Eth",
+    is_enabled: true,
+    character_original_string: /ð/g
+  },
+  {
+    character_replacement_string: "\u00B1",
+    description: "Latin Small Letter N With Tilde",
+    is_enabled: true,
+    character_original_string: /ñ/g
+  },
+  {
+    character_replacement_string: "\u00B2",
+    description: "Latin Small Letter O With Grave",
+    is_enabled: true,
+    character_original_string: /ò/g
+  },
+  {
+    character_replacement_string: "\u00B3",
+    description: "Latin Small Letter O With Acute",
+    is_enabled: true,
+    character_original_string: /ó/g
+  },
+  {
+    character_replacement_string: "\u00B4",
+    description: "Latin Small Letter O With Circumflex",
+    is_enabled: true,
+    character_original_string: /ô/g
+  },
+  {
+    character_replacement_string: "\u00B5",
+    description: "Latin Small Letter O With Tilde",
+    is_enabled: true,
+    character_original_string: /õ/g
+  },
+  {
+    character_replacement_string: "\u00B6",
+    description: "Latin Small Letter O With Diaeresis",
+    is_enabled: true,
+    character_original_string: /ö/g
+  },
+  {
+    character_replacement_string: "\u00B7",
+    description: "Division Sign",
+    is_enabled: true,
+    character_original_string: /\÷/ig
+  },
+  {
+    character_replacement_string: "\u00B8",
+    description: "Latin Small Letter O With Stroke",
+    is_enabled: true,
+    character_original_string: /ø/g
+  },
+  {
+    character_replacement_string: "\u00B9",
+    description: "Latin Small Letter U With Grave",
+    is_enabled: true,
+    character_original_string: /ù/g
+  },
+  {
+    character_replacement_string: "\u00BA",
+    description: "Latin Small Letter U With Acute",
+    is_enabled: true,
+    character_original_string: /ú/g
+  },
+  {
+    character_replacement_string: "\u00BB",
+    description: "Latin Small Letter U With Circumflex",
+    is_enabled: true,
+    character_original_string: /û/g
+  },
+  {
+    character_replacement_string: "\u00BC",
+    description: "Latin Small Letter U With Diaeresis",
+    is_enabled: true,
+    character_original_string: /ü/g
+  },
+  {
+    character_replacement_string: "\u00BD",
+    description: "Latin Small Letter Y With Acute",
+    is_enabled: true,
+    character_original_string: /ý/g
+  },
+  {
+    character_replacement_string: "\u00BE",
+    description: "Latin Small Letter Thorn",
+    is_enabled: true,
+    character_original_string: /þ/g
+  },
+  {
+    character_replacement_string: "\u00BF",
+    description: "Latin Small Letter Y With Diaeresis",
+    is_enabled: true,
+    character_original_string: /ÿ/g
+  },
+  {
+    character_replacement_string: "\u00C0",
+    description: "Euro Sign",
+    is_enabled: true,
+    character_original_string: /\€/ig
+  },
+  {
+    character_replacement_string: "\u00C1",
+    description: "Single Low-9 Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\‚/ig
+  },
+  {
+    character_replacement_string: "\u00C2",
+    description: "Double Low-9 Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\„/ig
+  },
+  {
+    character_replacement_string: "\u00C3",
+    description: "Circumflex Accent",
+    is_enabled: true,
+    character_original_string: /\^/ig
+  },
+  {
+    character_replacement_string: "\u00C4",
+    description: "Single Left-Pointing Angle Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\‹/ig
+  },
+  {
+    character_replacement_string: "\u00C5",
+    description: "Latin Capital Ligature Oe",
+    is_enabled: true,
+    character_original_string: /Œ/i
+  },
+  {
+    character_replacement_string: "\u00C6",
+    description: "Left Single Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\‘/ig
+  },
+  {
+    character_replacement_string: "\u00C7",
+    description: "Right Single Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\’/ig
+  },
+  {
+    character_replacement_string: "\u00C8",
+    description: "Left Double Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\“/ig
+  },
+  {
+    character_replacement_string: "\u00C9",
+    description: "Right Double Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\”/ig
+  },
+  {
+    character_replacement_string: "\u00CA",
+    description: "Small Tilde",
+    is_enabled: true,
+    character_original_string: /\˜/ig
+  },
+  {
+    character_replacement_string: "\u00CB",
+    description: "Trade Mark Sign",
+    is_enabled: true,
+    character_original_string: /\™/ig
+  },
+  {
+    character_replacement_string: "\u00CC",
+    description: "Single Right-Pointing Angle Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\›/ig
+  },
+  {
+    character_replacement_string: "\u00CD",
+    description: "Latin Small Ligature Oe",
+    is_enabled: true,
+    character_original_string: /œ/g
+  },
+  {
+    character_replacement_string: "\u00CE",
+    description: "Latin Capital Letter Y With Diaeresis",
+    is_enabled: true,
+    character_original_string: /Ÿ/g
+  },
+  {
+    character_replacement_string: "\u00CF",
+    description: "Inverted Exclamation Mark",
+    is_enabled: true,
+    character_original_string: /\¡/ig
+  },
+  {
+    character_replacement_string: "\u00D0",
+    description: "Cent Sign",
+    is_enabled: true,
+    character_original_string: /\¢/ig
+  },
+  {
+    character_replacement_string: "\u00D1",
+    description: "Pound Sign",
+    is_enabled: true,
+    character_original_string: /\£/ig
+  },
+  {
+    character_replacement_string: "\u00D2",
+    description: "Currency Sign",
+    is_enabled: true,
+    character_original_string: /\¤/ig
+  },
+  {
+    character_replacement_string: "\u00D3",
+    description: "Yen Sign",
+    is_enabled: true,
+    character_original_string: /\¥/ig
+  },
+  {
+    character_replacement_string: "\u00D4",
+    description: "Broken Bar",
+    is_enabled: true,
+    character_original_string: /\¦/ig
+  },
+  {
+    character_replacement_string: "\u00D5",
+    description: "Section Sign",
+    is_enabled: true,
+    character_original_string: /\§/ig
+  },
+  {
+    character_replacement_string: "\u00D6",
+    description: "Diaeresis",
+    is_enabled: true,
+    character_original_string: /\¨/ig
+  },
+  {
+    character_replacement_string: "\u00D7",
+    description: "Copyright Sign",
+    is_enabled: true,
+    character_original_string: /\©/ig
+  },
+  {
+    character_replacement_string: "\u00D8",
+    description: "Feminine Ordinal Indicator",
+    is_enabled: true,
+    character_original_string: /\ª/ig
+  },
+  {
+    character_replacement_string: "\u00D9",
+    description: "Left-Pointing Double Angle Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\«/ig
+  },
+  {
+    character_replacement_string: "\u00DA",
+    description: "Registered Sign",
+    is_enabled: true,
+    character_original_string: /\®/ig
+  },
+  {
+    character_replacement_string: "\u00DB",
+    description: "Masculine Ordinal Indicator",
+    is_enabled: true,
+    character_original_string: /\º/ig
+  },
+  {
+    character_replacement_string: "\u00DC",
+    description: "Acute Accent",
+    is_enabled: true,
+    character_original_string: /\´/ig
+  },
+  {
+    character_replacement_string: "\u00DD",
+    description: "Right-Pointing Double Angle Quotation Mark",
+    is_enabled: true,
+    character_original_string: /\»/ig
+  },
+  {
+    character_replacement_string: "\u00DE",
+    description: "Inverted Question Mark",
+    is_enabled: true,
+    character_original_string: /\¿/ig
+  },
+  {
+    character_replacement_string: "\u00DF",
+    description: "Replacement Character",
+    is_enabled: true,
+    character_original_string: /\�/ig
+  },
+  {
+    character_replacement_string: "\u00E0",
+    description: "Triangle Button",
+    is_enabled: true,
+    character_original_string: /\:triangle\:/ig
+  },
+  {
+    character_replacement_string: "\u00E1",
+    description: "Square Button",
+    is_enabled: true,
+    character_original_string: /\:square\:/ig
+  },
+  {
+    character_replacement_string: "\u00E2",
+    description: "Cross Button",
+    is_enabled: true,
+    character_original_string: /\:cross\:/ig
+  },
+  {
+    character_replacement_string: "\u00E3",
+    description: "Circle Button",
+    is_enabled: true,
+    character_original_string: /\:circle\:/ig
+  },
+  {
+    character_replacement_string: "\u00E4",
+    description: "Left Arrow",
+    is_enabled: true,
+    character_original_string: /\:left\:/ig
+  },
+  {
+    character_replacement_string: "\u00E5",
+    description: "Down Arrow",
+    is_enabled: true,
+    character_original_string: /\:down\:/ig
+  },
+  {
+    character_replacement_string: "\u00E6",
+    description: "Right Arrow",
+    is_enabled: true,
+    character_original_string: /\:right\:/ig
+  },
+  {
+    character_replacement_string: "\u00E7",
+    description: "No-Break Space",
+    is_enabled: false,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00E8",
+    description: "Tilde",
+    is_enabled: false,
+    character_original_string: /\~/ig
+  },
+  {
+    character_replacement_string: "\u00E9",
+    description: "Modifier Letter Circumflex Accent",
+    is_enabled: true,
+    character_original_string: /\ˆ/ig
+  },
+  {
+    character_replacement_string: "\u00EA",
+    description: "Em Space",
+    is_enabled: true,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00EB",
+    description: "Three-Per-Em Space",
+    is_enabled: true,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00EC",
+    description: "Four-Per-Em Space",
+    is_enabled: true,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00ED",
+    description: "Six-Per-Em Space",
+    is_enabled: true,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00EE",
+    description: "Figure Space",
+    is_enabled: true,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00EF",
+    description: "Punctuation Space",
+    is_enabled: true,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00F0",
+    description: "Thin Space",
+    is_enabled: true,
+    character_original_string: /\ /ig
+  },
+  {
+    character_replacement_string: "\u00F1",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F2",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F3",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F4",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F5",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F6",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F7",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F8",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F9",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FA",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FB",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FC",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FD",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FE",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FF",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  }
+];
+
+var controlCharacterData = [{
+    character_replacement_string: "\u0000",
+    description: "Null",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0001",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0002",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0003",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0004",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0005",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0006",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0007",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0008",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0009",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u000F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0010",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0011",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0012",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0013",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0014",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0015",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0016",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0017",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0018",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0019",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u001F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0020",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0021",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0022",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0023",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0024",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0025",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0026",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0027",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0028",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0029",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u002A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u002B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u002C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u002D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u002E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u002F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0030",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0031",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0032",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0033",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0034",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0035",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0036",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0037",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0038",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0039",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u003A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u003B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u003C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u003D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u003E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u003F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0040",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0041",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "~\u0042~",
+    description: "Bold Text",
+    is_enabled: true,
+    character_original_string: /(\:bold\:)+/ig
+  },
+  {
+    character_replacement_string: "\u0043",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0044",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0045",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0046",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0047",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "~\u0048~",
+    description: "Highlight Text",
+    is_enabled: true,
+    character_original_string: /(\:highlight\:)+/ig
+  },
+  {
+    character_replacement_string: "\u0049",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u004A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u004B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u004C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u004D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: " ~\u004E~ ",
+    description: "New Line",
+    is_enabled: true,
+    character_original_string: /\:newline\:/ig
+  },
+  {
+    character_replacement_string: "\u004F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0050",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0051",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0052",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0053",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0054",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0055",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0056",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0057",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0058",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "~\u0059~",
+    description: "Yellow Text",
+    is_enabled: true,
+    character_original_string: /(\:yellow\:)+/ig
+  },
+  {
+    character_replacement_string: "\u005A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u005B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u005C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u005D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u005E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u005F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0060",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0061",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "~\u0062~",
+    description: "Blue Text",
+    is_enabled: true,
+    character_original_string: /(\:blue\:)+/ig
+  },
+  {
+    character_replacement_string: "\u0063",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0064",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0065",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0066",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "~\u0067~",
+    description: "Green Text",
+    is_enabled: true,
+    character_original_string: /(\:green\:)+/ig
+  },
+  {
+    character_replacement_string: "~\u0068~",
+    description: "Highlight Text",
+    is_enabled: true,
+    character_original_string: /(\:highlight\:)+/ig
+  },
+  {
+    character_replacement_string: "\u0069",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u006A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u006B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u006C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u006D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: " ~\u006E~ ",
+    description: "New Line",
+    is_enabled: true,
+    character_original_string: /\:newline\:/ig
+  },
+  {
+    character_replacement_string: "~\u006F~",
+    description: "Orange Text",
+    is_enabled: true,
+    character_original_string: /(\:orange\:)+/ig
+  },
+  {
+    character_replacement_string: "~\u0070~",
+    description: "Purple Text",
+    is_enabled: true,
+    character_original_string: /(\:purple\:)+/ig
+  },
+  {
+    character_replacement_string: "~\u0071~",
+    description: "Pink Text",
+    is_enabled: true,
+    character_original_string: /(\:pink\:)+/ig
+  },
+  {
+    character_replacement_string: "~\u0072~",
+    description: "Red Text",
+    is_enabled: true,
+    character_original_string: /(\:red\:)+/ig
+  },
+  {
+    character_replacement_string: "\u0073",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "~\u0074~",
+    description: "Teal Text",
+    is_enabled: true,
+    character_original_string: /(\:teal\:)+/ig
+  },
+  {
+    character_replacement_string: "\u0075",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0076",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "~\u0077~",
+    description: "White Text",
+    is_enabled: true,
+    character_original_string: /(\:white\:)+/ig
+  },
+  {
+    character_replacement_string: "~\u0078~",
+    description: "Cyan Text",
+    is_enabled: true,
+    character_original_string: /(\:cyan\:)+/ig
+  },
+  {
+    character_replacement_string: "~\u0079~",
+    description: "Yellow Text",
+    is_enabled: true,
+    character_original_string: /(\:yellow\:)+/ig
+  },
+  {
+    character_replacement_string: "\u007A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u007B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u007C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u007D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u007E",
+    description: "Tilde",
+    is_enabled: false,
+    character_original_string: "~"
+  },
+  {
+    character_replacement_string: "\u007F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0080",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0081",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0082",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0083",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0084",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0085",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0086",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0087",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0088",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0089",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u008A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u008B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u008C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u008D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u008E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u008F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0090",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0091",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0092",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0093",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0094",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0095",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0096",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0097",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0098",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u0099",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u009A",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u009B",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u009C",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u009D",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u009E",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u009F",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A0",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A1",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A2",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A3",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A4",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A5",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A6",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A7",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A8",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00A9",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00AA",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00AB",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00AC",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00AD",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00AE",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00AF",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B0",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B1",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B2",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B3",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B4",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B5",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B6",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B7",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B8",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00B9",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00BA",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00BB",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00BC",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00BD",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00BE",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00BF",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C0",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C1",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C2",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C3",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C4",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C5",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C6",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C7",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C8",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00C9",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00CA",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00CB",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00CC",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00CD",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00CE",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00CF",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D0",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D1",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D2",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D3",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D4",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D5",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D6",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D7",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D8",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00D9",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00DA",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00DB",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00DC",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00DD",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00DE",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00DF",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E0",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E1",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E2",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E3",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E4",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E5",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E6",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E7",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E8",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00E9",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00EA",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00EB",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00EC",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00ED",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00EE",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00EF",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F0",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F1",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F2",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F3",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F4",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F5",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F6",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F7",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F8",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00F9",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FA",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FB",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FC",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FD",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FE",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  },
+  {
+    character_replacement_string: "\u00FF",
+    description: "Unused",
+    is_enabled: false,
+    character_original_string: ""
+  }
+];
 
 var emptyWeaponInventory = fs.readFileSync("empty_weapon_inventory_data.bin", "binary");
 var emptyWeaponInventoryBuffer = Buffer.alloc(280, 0);
@@ -440,6 +3521,9 @@ function checkIfAppExists() {
       // If the processObject was never opened, we open it
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
+      overlayFilesList = fs.readdirSync(__dirname + "//" + "overlay");
+      overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === mp3FileExtension);
+      overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
       processObject = memoryjs.openProcess(processName);
       findNewPcsx2BaseAddress();
       for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
@@ -451,7 +3535,13 @@ function checkIfAppExists() {
           gameMemoryToDisplay.push(gameMemory.memory_data[gameMemoryObjectIndex]);
         }
       }
+      let mp3FilesListObject = {
+        mp3_files_list: overlayMp3FilesOnly,
+        beyblade_filename: beybladeSfxFileName
+      };
+      //console.log(mp3FilesListObject);
       //console.log(gameMemoryToDisplay);
+      io.sockets.emit("mp3_files_list_object", mp3FilesListObject);
       io.sockets.emit("game_memory_to_display", gameMemoryToDisplay);
       console.log("Process opened");
     }
@@ -2634,6 +5724,18 @@ function processTextForNotificationBox(message) {
   processedMessage = processedMessage.replace(/\s+/ig, " ");
   processedMessage = processedMessage.replace(/[\u0000-\u001F]+/ig, "");
   processedMessage = processedMessage.replace(/[\u007E-\uFFFF]+/ig, "");
+  for (let characterDataIndex = 0; characterDataIndex < characterData.length; characterDataIndex++) {
+    if (characterData[characterDataIndex].is_enabled == true) {
+      if (characterData[characterDataIndex].description != "Unused") {
+        processedMessage = processedMessage.replace(characterData[characterDataIndex].character_original_string, characterData[characterDataIndex].character_replacement_string);
+      }
+    }
+    if (controlCharacterData[characterDataIndex].is_enabled == true) {
+      if (controlCharacterData[characterDataIndex].description != "Unused") {
+        processedMessage = processedMessage.replace(controlCharacterData[characterDataIndex].character_original_string, controlCharacterData[characterDataIndex].character_replacement_string);
+      }
+    }
+  }
   processedMessage = processedMessage.substring(0, 255);
   processedMessage = processedMessage.trim();
   return processedMessage;
@@ -2650,8 +5752,8 @@ function writeToNotificationBox(text) {
   text = text.substring(0, 255);
   text = text.trim();
   text = text.replace(/\s+/ig, " ");
-  text = text.replace(/[\u0000-\u001F]+/ig, "");
-  text = text.replace(/[\u007E-\uFFFF]+/ig, "");
+  //text = text.replace(/[\u0000-\u001F]+/ig, "");
+  //text = text.replace(/[\u007E-\uFFFF]+/ig, "");
   text = text.trim();
   text = text.substring(0, 255);
   text = text.trim();
@@ -2993,6 +6095,9 @@ io.sockets.on('connection',
       console.log("Client connected, app running");
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
+      overlayFilesList = fs.readdirSync(__dirname + "//" + "overlay");
+      overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === mp3FileExtension);
+      overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
       findNewPcsx2BaseAddress();
       gameMemoryToDisplay = [];
       gameMemoryToOverride = [];
@@ -3005,7 +6110,13 @@ io.sockets.on('connection',
           gameMemoryToDisplay.push(gameMemory.memory_data[gameMemoryObjectIndex]);
         }
       }
+      let mp3FilesListObject = {
+        mp3_files_list: overlayMp3FilesOnly,
+        beyblade_filename: beybladeSfxFileName
+      };
+      //console.log(mp3FilesListObject);
       //console.log(gameMemoryToDisplay);
+      io.to(socket.id).emit("mp3_files_list_object", mp3FilesListObject);
       io.to(socket.id).emit("game_memory_to_display", gameMemoryToDisplay);
     }
     socket.on('disconnect', function() {
