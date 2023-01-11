@@ -8214,6 +8214,27 @@
       "to_display": false,
       "to_override": false,
       "value_to_override_with": -1
+    },
+    {
+      "address_name": "Frame Limiter",
+      "memory_address": "0x002D92C4",
+      "data_type": "int32",
+      "pointer_type": "none",
+      "is_writeable": true,
+      "offset_type": "none",
+      "offset": "0x0",
+      "size": 4,
+      "current_value": -1,
+      "old_value": -1,
+      "total": "",
+      "color": "#FFFFFFFF",
+      "display_total": false,
+      "prepend_string": "",
+      "append_string": "",
+      "decimal_points_to_display": -1,
+      "to_display": false,
+      "to_override": true,
+      "value_to_override_with": 344064023
     }
   ],
   "spawn_vehicle_portland_garage_data": {
@@ -8242,6 +8263,10 @@
     "rotation_y": 1,
     "rotation_z": 0,
     "rotation_w": 1
+  },
+  "frame_limiter_options": {
+    "frame_limiter_on": 344064023,
+    "frame_limiter_off": 0
   },
   "vehicle_flags": [
     {

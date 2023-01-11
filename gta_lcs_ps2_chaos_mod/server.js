@@ -3147,6 +3147,7 @@ function onMessageHandler(target, tags, message, self) {
   let username = tags["username"];
   let customRewardId = tags["custom-reward-id"];
   let msgTimestamp = tags["tmi-sent-ts"];
+  let userId = tags["user-id"];
   let messageWords = message.split(/\s+/ig);
   let messageToWrite = "";
   let finalUsername = "";
@@ -3180,6 +3181,44 @@ function onMessageHandler(target, tags, message, self) {
       finalUsername = username;
     }
     messageToWrite = message;
+    let githubPrefixCheck = /^[!\"#$%&'()*+,\-./:;%=%?@\[\\\]^_`{|}~¡¦¨«¬­¯°±»½⅔¾⅝⅞∅ⁿ№★†‡‹›¿‰℅æßçñ¹⅓¼⅛²⅜³⁴₱€¢£¥—–·„“”‚‘’•√π÷×¶∆′″§Π♣♠♥♪♦∞≠≈©®™✓‛‟❛❜❝❞❟❠❮❯⹂〝〞〟＂🙶🙷🙸󠀢⍻✅✔𐄂🗸‱]*\s*(github)+|(source(\s*code)*)+/ig.test(message);
+    if (githubPrefixCheck == true) {
+      client.action(target, "@" + finalUsername + " The source code for GTA LCS Chaos Mod can be found here: " + "https://github.com/WhatAboutGaming/gta-lcs-ps2-chaos-mod");
+    }
+    let trustedUsersIndex = chatConfig.trusted_users.findIndex(element => element == userId);
+    if (trustedUsersIndex >= 0) {
+      // This is a trusted user
+      let toggleFrameLimiterPrefixCheck = /^[!\"#$%&'()*+,\-./:;%=%?@\[\\\]^_`{|}~¡¦¨«¬­¯°±»½⅔¾⅝⅞∅ⁿ№★†‡‹›¿‰℅æßçñ¹⅓¼⅛²⅜³⁴₱€¢£¥—–·„“”‚‘’•√π÷×¶∆′″§Π♣♠♥♪♦∞≠≈©®™✓‛‟❛❜❝❞❟❠❮❯⹂〝〞〟＂🙶🙷🙸󠀢⍻✅✔𐄂🗸‱]*\s*(toggle\s*frame\s*limiter)+/ig.test(message);
+      if (toggleFrameLimiterPrefixCheck == true) {
+        // Uhhh do the thing to change the framelimiter in the game's memory
+        if (processObject == undefined) {
+          let returnMessage = "Can't toggle frame limiter, emulator is not running!";
+          client.action(target, "@" + finalUsername + " " + returnMessage);
+          return returnMessage;
+        }
+        let playerPointer = readFromAppMemory("Player Pointer").current_value;
+        if (playerPointer <= startPointerAddress || playerPointer >= endPointerAddress) {
+          let returnMessage = "Can't toggle frame limiter, game is not running!";
+          client.action(target, "@" + finalUsername + " " + returnMessage);
+          return returnMessage;
+        }
+        let frameLimiterValue = readFromAppMemory("Frame Limiter").current_value;
+        if (frameLimiterValue != gameMemory.frame_limiter_options.frame_limiter_off) {
+          writeToAppMemory("Frame Limiter", gameMemory.frame_limiter_options.frame_limiter_off);
+          let returnMessage = "Disabled frame limiter!";
+          writeToNotificationBox(returnMessage);
+          client.action(target, "@" + finalUsername + " " + returnMessage);
+          return returnMessage;
+        }
+        if (frameLimiterValue == gameMemory.frame_limiter_options.frame_limiter_off) {
+          writeToAppMemory("Frame Limiter", gameMemory.frame_limiter_options.frame_limiter_on);
+          let returnMessage = "Enabled frame limiter!";
+          writeToNotificationBox(returnMessage);
+          client.action(target, "@" + finalUsername + " " + returnMessage);
+          return returnMessage;
+        }
+      }
+    }
     if (customRewardId != undefined) {
       console.log(new Date().toISOString() + " CUSTOM REWARD ID " + customRewardId);
       doCustomReward(finalUsername, message, target, customRewardId);

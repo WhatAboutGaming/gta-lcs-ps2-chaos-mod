@@ -14,5 +14,8 @@
   "channels": [
     "justinfan123"
   ],
-  "logchat": true
+  "logchat": true,
+  "trusted_users": [
+    "trusted_user_id"
+  ]
 }
