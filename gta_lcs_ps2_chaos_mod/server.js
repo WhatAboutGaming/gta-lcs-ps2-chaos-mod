@@ -3247,12 +3247,9 @@ function onConnectedHandler(addr, port) {
 
 function onRawMessageHandler(messageCloned, message) {
   let timeStamp = new Date().toISOString();
-  //console.log(messageCloned);
   if (chatConfig.logchat == true) {
-    // Write to text file
+    console.log(timeStamp + " [CHAT] " + message.raw);
   }
-  //console.log(timeStamp + " [CHAT] " + message.raw);
-  //writeToNotificationBox(message.raw);
 }
 
 function keepMovementFrozen() {
