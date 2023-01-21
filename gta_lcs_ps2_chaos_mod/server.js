@@ -3240,7 +3240,7 @@ function onMessageHandler(target, tags, message, self) {
 
 function onConnectedHandler(addr, port) {
   console.log("* Connected to " + addr + ":" + port);
-  client.action("whataboutgaminglive", new Date().toISOString() + " Connected! PogChamp");
+  client.action(chatConfig.main_channel, new Date().toISOString() + " Connected! PogChamp");
   //client.join("twitchplayspokemon"); // Join a channel
   //client.raw("PING"); // This is how you send a raw line
 }
