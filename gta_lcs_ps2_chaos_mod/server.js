@@ -2331,9 +2331,9 @@ var controlCharacterData = [{
   },
   {
     character_replacement_string: "\u007E",
-    description: "Tilde",
+    description: "Unused",
     is_enabled: false,
-    character_original_string: "~"
+    character_original_string: ""
   },
   {
     character_replacement_string: "\u007F",
