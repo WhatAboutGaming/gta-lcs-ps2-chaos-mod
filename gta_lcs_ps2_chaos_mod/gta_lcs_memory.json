@@ -2,7 +2,8 @@
   "process_name": "pcsx2.exe",
   "base_address": "0x20000000",
   "end_address": "0x22000000",
-  "use_new_pcsx2_versions": false,
+  "base_pointer_address": "0x01000000",
+  "end_pointer_address": "0x02000000",
   "memory_data": [
     {
       "address_name": "Days passed in game 2",
