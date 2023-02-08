@@ -8404,6 +8404,9 @@
       "wanted_level": 6
     }
   ],
+  "audio_file_extension": "mp3",
+  "beyblade_sfx_filename": "beyblade.mp3",
+  "overlay_path": "overlay",
   "radio_data": [
     {
       "name": "Head Radio",

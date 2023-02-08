@@ -16,7 +16,7 @@ var mp3FilesListObject = {
 function preload() {
   font = loadFont("VCREAS_3.0.ttf"); // Pixel perfect font, set to 20 points for crispy pixel perfectness, mono font
   font2 = loadFont("Pricedown.ttf"); // GTA font, not mono
-  soundFormats("mp3");
+  //soundFormats("mp3");
   // For now the sound effects are hardcoded, maybe a better way would be to just look for all files that have the mp3 extension (Done, this is done on server side, then the server sends the list to the overlay when the overlay connects to the server, which then loads the MP3 files)
   /*
   beyBladeSoundEffect = loadSound("beyblade.mp3");

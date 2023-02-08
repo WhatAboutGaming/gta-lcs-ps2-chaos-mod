@@ -14,10 +14,12 @@ var rewardsConfigFileName = "rewards_config_lcs.json";
 var gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
 var chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
 var rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
-var beybladeSfxFileName = "beyblade.mp3";
-var mp3FileExtension = ".mp3";
-var overlayFilesList = fs.readdirSync(__dirname + "//" + "overlay");
-var overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === mp3FileExtension);
+var beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
+var audioFileExtension = "." + gameMemory.audio_file_extension;
+var overlayPath = gameMemory.overlay_path;
+overlayPath = overlayPath.replace(/({{path_separator}})+/ig, path.sep);
+var overlayFilesList = fs.readdirSync(__dirname + path.sep + overlayPath);
+var overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === audioFileExtension);
 overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
 var processName = gameMemory.process_name;
 var gameMemoryToDisplay = [];
@@ -82,6 +84,9 @@ emptyWeaponInventoryBuffer.write(emptyWeaponInventory, 0, 280, "binary");
 
 var currentWeaponInventory = undefined;
 var oldWeaponInventory = undefined;
+
+var baseMemoryAddress = parseInt(gameMemory.base_address, 16);
+var endMemoryAddress = parseInt(gameMemory.end_address, 16);
 
 var basePointerAddress = parseInt(gameMemory.base_pointer_address, 16);
 var endPointerAddress = parseInt(gameMemory.end_pointer_address, 16);
@@ -470,10 +475,16 @@ function checkIfAppExists() {
       // If the processObject was never opened, we open it
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
+      beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
+      audioFileExtension = "." + gameMemory.audio_file_extension;
+      overlayPath = gameMemory.overlay_path;
+      overlayPath = overlayPath.replace(/({{path_separator}})+/ig, path.sep);
+      baseMemoryAddress = parseInt(gameMemory.base_address, 16);
+      endMemoryAddress = parseInt(gameMemory.end_address, 16);
       basePointerAddress = parseInt(gameMemory.base_pointer_address, 16);
       endPointerAddress = parseInt(gameMemory.end_pointer_address, 16);
-      overlayFilesList = fs.readdirSync(__dirname + "//" + "overlay");
-      overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === mp3FileExtension);
+      overlayFilesList = fs.readdirSync(__dirname + path.sep + overlayPath);
+      overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === audioFileExtension);
       overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
       processObject = memoryjs.openProcess(processName);
       for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
@@ -550,7 +561,7 @@ function checkIfAppExists() {
       if (vehiclePointerOutput > 0) {
         //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerOutput = 0x" + vehiclePointerOutput.toString("16").toUpperCase().padStart(8, "0"));
         let vehicleIdOffset = parseInt(readFromAppMemory("Vehicle ID").offset, 16);
-        let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+        let gameBaseAddress = baseMemoryAddress;
         //let vehicleIdAddress = vehiclePointerOutput + gameBaseAddress + vehicleIdOffset;
         let vehicleId = readFromCustomMemoryAddress(vehiclePointerOutput + gameBaseAddress, vehicleIdOffset, "byte", undefined);
         let vehicleIdToFind = gameMemory.vehicle_data.findIndex(element => element.id == vehicleId);
@@ -564,7 +575,7 @@ function checkIfAppExists() {
         
         //console.log(vehiclePointerToRead);
         //console.log(vehicleId);
-        //vehicleId = vehiclePointerOutput + parseInt(gameMemory.base_address, 16);
+        //vehicleId = vehiclePointerOutput + baseMemoryAddress;
         //console.log(vehicleIdAddress.toString("16").toUpperCase().padStart(8, "0"));
         if (vehicleIdToFind >= 1) {
           //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerOutput = 0x" + vehiclePointerOutput.toString("16").toUpperCase().padStart(8, "0"));
@@ -629,7 +640,7 @@ function checkIfValueChanged(addressName) {
   if (memoryIndex == -1) {
     return "Invalid memory name";
   }
-  //gameMemory.memory_data[memoryIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), gameMemory.memory_data[memoryIndex].data_type, memoryIndex);
+  //gameMemory.memory_data[memoryIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), baseMemoryAddress, gameMemory.memory_data[memoryIndex].data_type, memoryIndex);
   if (gameMemory.memory_data[memoryIndex].current_value != gameMemory.memory_data[memoryIndex].old_value) {
     //console.log(gameMemory.memory_data[memoryIndex].address_name + " Value changed " + gameMemory.memory_data[memoryIndex].current_value + " Old " + gameMemory.memory_data[memoryIndex].old_value);
   }
@@ -681,7 +692,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
   let vehicleRotationSpeedZData = readFromAppMemory("Vehicle Rotation Speed Z");
   let vehicleOptimizationFlag1Data = readFromAppMemory("Vehicle Optimization Flag 1");
   let vehicleOptimizationFlag2Data = readFromAppMemory("Vehicle Optimization Flag 2");
-  let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+  let gameBaseAddress = baseMemoryAddress;
   let initialZPositionDifference = 3; // Start first vehicle to drop 3 units higher than where the player is, to make sure no vehicles overlap each other, 3 units seems to be the most optmized height possible, Linerunner is the tallest vehicle in game, and with 3 units high, the vehicles will spawn right on top of the Linerunner with pretty much no space between the vehicles
   //console.log(vehicleOptimizationFlag1Data);
   //console.log(vehicleOptimizationFlag2Data);
@@ -756,7 +767,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
       //let vehicleXPositionOffset = parseInt(readFromAppMemory("Vehicle X Position").offset, 16);
       //let vehicleYPositionOffset = parseInt(readFromAppMemory("Vehicle Y Position").offset, 16);
       //let vehicleZPositionOffset = parseInt(readFromAppMemory("Vehicle Z Position").offset, 16);
-      //let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+      //let gameBaseAddress = baseMemoryAddress;
       //let vehicleIdAddress = vehiclePointerValue + gameBaseAddress + vehicleIdOffset;
       let vehicleId = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, vehicleIdOffset, vehicleIdDataType, undefined);
       let vehicleIdToFind = gameMemory.vehicle_data.findIndex(element => element.id == vehicleId);
@@ -770,7 +781,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
       */
       //console.log(vehiclePointerToRead);
       //console.log(vehicleId);
-      //vehicleId = vehiclePointerValue + parseInt(gameMemory.base_address, 16);
+      //vehicleId = vehiclePointerValue + baseMemoryAddress;
       //console.log(vehicleIdAddress.toString("16").toUpperCase().padStart(8, "0"));
       if (vehicleIdToFind >= 1) {
         /*
@@ -870,7 +881,7 @@ function dropPedestrianPoolOnPlayer(username, message, channelName, customReward
   let pedestrianXPositionData = readFromAppMemory("Player Position X");
   let pedestrianYPositionData = readFromAppMemory("Player Position Y");
   let pedestrianZPositionData = readFromAppMemory("Player Position Z");
-  let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+  let gameBaseAddress = baseMemoryAddress;
   let initialZPositionDifference = 3; // Start first vehicle to drop 3 units higher than where the player is, to make sure no vehicles overlap each other, 3 units seems to be the most optmized height possible, Linerunner is the tallest vehicle in game, and with 3 units high, the vehicles will spawn right on top of the Linerunner with pretty much no space between the vehicles
   //console.log(vehicleOptimizationFlag1Data);
   //console.log(vehicleOptimizationFlag2Data);
@@ -944,7 +955,7 @@ function dropPedestrianPoolOnPlayer(username, message, channelName, customReward
       //let vehicleXPositionOffset = parseInt(readFromAppMemory("Vehicle X Position").offset, 16);
       //let vehicleYPositionOffset = parseInt(readFromAppMemory("Vehicle Y Position").offset, 16);
       //let vehicleZPositionOffset = parseInt(readFromAppMemory("Vehicle Z Position").offset, 16);
-      //let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+      //let gameBaseAddress = baseMemoryAddress;
       //let vehicleIdAddress = vehiclePointerValue + gameBaseAddress + vehicleIdOffset;
       //console.log(vehicleId);
       //console.log(vehicleIdToFind);
@@ -956,7 +967,7 @@ function dropPedestrianPoolOnPlayer(username, message, channelName, customReward
       */
       //console.log(vehiclePointerToRead);
       //console.log(vehicleId);
-      //vehicleId = vehiclePointerValue + parseInt(gameMemory.base_address, 16);
+      //vehicleId = vehiclePointerValue + baseMemoryAddress;
       //console.log(vehicleIdAddress.toString("16").toUpperCase().padStart(8, "0"));
       /*
       if (vehiclePointerValue == vehiclePointer) {
@@ -1050,7 +1061,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
   let vehicleRotationSpeedZData = readFromAppMemory("Vehicle Rotation Speed Z");
   let vehicleOptimizationFlag1Data = readFromAppMemory("Vehicle Optimization Flag 1");
   let vehicleOptimizationFlag2Data = readFromAppMemory("Vehicle Optimization Flag 2");
-  let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+  let gameBaseAddress = baseMemoryAddress;
   let initialZPositionDifference = 3; // Start first vehicle to drop 3 units higher than where the player is, to make sure no vehicles overlap each other, 3 units seems to be the most optmized height possible, Linerunner is the tallest vehicle in game, and with 3 units high, the vehicles will spawn right on top of the Linerunner with pretty much no space between the vehicles
   //console.log(vehicleOptimizationFlag1Data);
   //console.log(vehicleOptimizationFlag2Data);
@@ -1124,7 +1135,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
       //let vehicleXPositionOffset = parseInt(readFromAppMemory("Vehicle X Position").offset, 16);
       //let vehicleYPositionOffset = parseInt(readFromAppMemory("Vehicle Y Position").offset, 16);
       //let vehicleZPositionOffset = parseInt(readFromAppMemory("Vehicle Z Position").offset, 16);
-      //let gameBaseAddress = parseInt(gameMemory.base_address, 16);
+      //let gameBaseAddress = baseMemoryAddress;
       //let vehicleIdAddress = vehiclePointerValue + gameBaseAddress + vehicleIdOffset;
       let vehicleId = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, vehicleIdOffset, vehicleIdDataType, undefined);
       let vehicleIdToFind = gameMemory.vehicle_data.findIndex(element => element.id == vehicleId);
@@ -1138,7 +1149,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
       */
       //console.log(vehiclePointerToRead);
       //console.log(vehicleId);
-      //vehicleId = vehiclePointerValue + parseInt(gameMemory.base_address, 16);
+      //vehicleId = vehiclePointerValue + baseMemoryAddress;
       //console.log(vehicleIdAddress.toString("16").toUpperCase().padStart(8, "0"));
       if (vehicleIdToFind >= 1) {
         /*
@@ -2758,14 +2769,14 @@ function writeToAppPointerBuffer(pointerName, offsetName, buffer) {
     gameMemory.memory_data[offsetIndex].current_value = "This offset is marked as Read Only";
     return gameMemory.memory_data[offsetIndex];
   }
-  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
+  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), baseMemoryAddress, gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
   if (gameMemory.memory_data[pointerIndex].current_value == 0) {
     gameMemory.memory_data[offsetIndex].memory_address = "0x0";
     gameMemory.memory_data[offsetIndex].current_value = -1;
     return gameMemory.memory_data[offsetIndex];
   }
   gameMemory.memory_data[offsetIndex].memory_address = "0x" + (parseInt(gameMemory.memory_data[offsetIndex].offset, 16) + gameMemory.memory_data[pointerIndex].current_value).toString(16);
-  gameMemory.memory_data[offsetIndex].current_value = writeToCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), buffer, offsetIndex);
+  gameMemory.memory_data[offsetIndex].current_value = writeToCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), baseMemoryAddress, buffer, offsetIndex);
   return gameMemory.memory_data[offsetIndex];
 }
 
@@ -2782,14 +2793,14 @@ function readFromAppPointerBuffer(pointerName, offsetName, size) {
   if (gameMemory.memory_data[pointerIndex].pointer_type == "none" || gameMemory.memory_data[offsetIndex].offset_type == "none") {
     return "Pointer address provided is not a pointer or offset address provided is not an offset";
   }
-  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
+  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), baseMemoryAddress, gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
   if (gameMemory.memory_data[pointerIndex].current_value == 0) {
     gameMemory.memory_data[offsetIndex].memory_address = "0x0";
     gameMemory.memory_data[offsetIndex].current_value = -1;
     return gameMemory.memory_data[offsetIndex];
   }
   gameMemory.memory_data[offsetIndex].memory_address = "0x" + (parseInt(gameMemory.memory_data[offsetIndex].offset, 16) + gameMemory.memory_data[pointerIndex].current_value).toString(16);
-  gameMemory.memory_data[offsetIndex].current_value = readFromCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), size, offsetIndex);
+  gameMemory.memory_data[offsetIndex].current_value = readFromCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), baseMemoryAddress, size, offsetIndex);
   return gameMemory.memory_data[offsetIndex];
 }
 
@@ -2805,7 +2816,7 @@ function writeToAppBuffer(addressName, buffer) {
     gameMemory.memory_data[memoryIndex].current_value = "This address is marked as Read Only";
     return gameMemory.memory_data[memoryIndex];
   }
-  gameMemory.memory_data[memoryIndex].current_value = writeToCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), buffer, memoryIndex);
+  gameMemory.memory_data[memoryIndex].current_value = writeToCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), baseMemoryAddress, buffer, memoryIndex);
   return gameMemory.memory_data[memoryIndex];
 }
 
@@ -2817,7 +2828,7 @@ function readFromAppBuffer(addressName, size) {
   if (memoryIndex == -1) {
     return "Invalid memory name";
   }
-  gameMemory.memory_data[memoryIndex].current_value = readFromCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), size, memoryIndex);
+  gameMemory.memory_data[memoryIndex].current_value = readFromCustomMemoryAddressBuffer(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), baseMemoryAddress, size, memoryIndex);
   return gameMemory.memory_data[memoryIndex];
 }
 
@@ -2917,7 +2928,7 @@ function writeToAppMemory(addressName, value) {
     gameMemory.memory_data[memoryIndex].current_value = "This address is marked as Read Only";
     return gameMemory.memory_data[memoryIndex];
   }
-  gameMemory.memory_data[memoryIndex].current_value = writeToCustomMemoryAddress(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), value, gameMemory.memory_data[memoryIndex].data_type, memoryIndex);
+  gameMemory.memory_data[memoryIndex].current_value = writeToCustomMemoryAddress(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), baseMemoryAddress, value, gameMemory.memory_data[memoryIndex].data_type, memoryIndex);
   return gameMemory.memory_data[memoryIndex];
 }
 
@@ -2929,7 +2940,7 @@ function readFromAppMemory(addressName) {
   if (memoryIndex == -1) {
     return "Invalid memory name";
   }
-  gameMemory.memory_data[memoryIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), gameMemory.memory_data[memoryIndex].data_type, memoryIndex);
+  gameMemory.memory_data[memoryIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[memoryIndex].memory_address, 16), baseMemoryAddress, gameMemory.memory_data[memoryIndex].data_type, memoryIndex);
   return gameMemory.memory_data[memoryIndex];
 }
 
@@ -2946,14 +2957,14 @@ function readFromAppPointer(pointerName, offsetName) {
   if (gameMemory.memory_data[pointerIndex].pointer_type == "none" || gameMemory.memory_data[offsetIndex].offset_type == "none") {
     return "Pointer address provided is not a pointer or offset address provided is not an offset";
   }
-  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
+  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), baseMemoryAddress, gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
   if (gameMemory.memory_data[pointerIndex].current_value == 0) {
     gameMemory.memory_data[offsetIndex].memory_address = "0x0";
     gameMemory.memory_data[offsetIndex].current_value = -1;
     return gameMemory.memory_data[offsetIndex];
   }
   gameMemory.memory_data[offsetIndex].memory_address = "0x" + (parseInt(gameMemory.memory_data[offsetIndex].offset, 16) + gameMemory.memory_data[pointerIndex].current_value).toString(16);
-  gameMemory.memory_data[offsetIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), gameMemory.memory_data[offsetIndex].data_type, offsetIndex);
+  gameMemory.memory_data[offsetIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), baseMemoryAddress, gameMemory.memory_data[offsetIndex].data_type, offsetIndex);
   return gameMemory.memory_data[offsetIndex];
 }
 
@@ -2974,14 +2985,14 @@ function writeToAppPointer(pointerName, offsetName, value) {
     gameMemory.memory_data[offsetIndex].current_value = "This offset is marked as Read Only";
     return gameMemory.memory_data[offsetIndex];
   }
-  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
+  gameMemory.memory_data[pointerIndex].current_value = readFromCustomMemoryAddress(parseInt(gameMemory.memory_data[pointerIndex].memory_address, 16), baseMemoryAddress, gameMemory.memory_data[pointerIndex].data_type, pointerIndex);
   if (gameMemory.memory_data[pointerIndex].current_value == 0) {
     gameMemory.memory_data[offsetIndex].memory_address = "0x0";
     gameMemory.memory_data[offsetIndex].current_value = -1;
     return gameMemory.memory_data[offsetIndex];
   }
   gameMemory.memory_data[offsetIndex].memory_address = "0x" + (parseInt(gameMemory.memory_data[offsetIndex].offset, 16) + gameMemory.memory_data[pointerIndex].current_value).toString(16);
-  gameMemory.memory_data[offsetIndex].current_value = writeToCustomMemoryAddress(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), parseInt(gameMemory.base_address, 16), value, gameMemory.memory_data[offsetIndex].data_type, offsetIndex);
+  gameMemory.memory_data[offsetIndex].current_value = writeToCustomMemoryAddress(parseInt(gameMemory.memory_data[offsetIndex].memory_address, 16), baseMemoryAddress, value, gameMemory.memory_data[offsetIndex].data_type, offsetIndex);
   return gameMemory.memory_data[offsetIndex];
 }
 
@@ -3072,10 +3083,16 @@ io.sockets.on('connection',
       console.log("Client connected, app running");
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
+      beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
+      audioFileExtension = "." + gameMemory.audio_file_extension;
+      overlayPath = gameMemory.overlay_path;
+      overlayPath = overlayPath.replace(/({{path_separator}})+/ig, path.sep);
+      baseMemoryAddress = parseInt(gameMemory.base_address, 16);
+      endMemoryAddress = parseInt(gameMemory.end_address, 16);
       basePointerAddress = parseInt(gameMemory.base_pointer_address, 16);
       endPointerAddress = parseInt(gameMemory.end_pointer_address, 16);
-      overlayFilesList = fs.readdirSync(__dirname + "//" + "overlay");
-      overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === mp3FileExtension);
+      overlayFilesList = fs.readdirSync(__dirname + path.sep + overlayPath);
+      overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === audioFileExtension);
       overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
       gameMemoryToDisplay = [];
       gameMemoryToOverride = [];
