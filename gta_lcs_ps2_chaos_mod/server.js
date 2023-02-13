@@ -148,7 +148,7 @@ function onMessageHandler(target, tags, message, self) {
     messageToWrite = message;
     let githubPrefixCheck = /^[!\"#$%&'()*+,\-./:;%=%?@\[\\\]^_`{|}~¡¦¨«¬­¯°±»½⅔¾⅝⅞∅ⁿ№★†‡‹›¿‰℅æßçñ¹⅓¼⅛²⅜³⁴₱€¢£¥—–·„“”‚‘’•√π÷×¶∆′″§Π♣♠♥♪♦∞≠≈©®™✓‛‟❛❜❝❞❟❠❮❯⹂〝〞〟＂🙶🙷🙸󠀢⍻✅✔𐄂🗸‱]*\s*(github)+|(source(\s*code)*)+/ig.test(message);
     if (githubPrefixCheck == true) {
-      client.action(target, "@" + finalUsername + " The source code for GTA LCS Chaos Mod can be found here: " + "https://github.com/WhatAboutGaming/gta-lcs-ps2-chaos-mod");
+      client.action(target, "@" + finalUsername + " " + chatConfig.github_message + " " + chatConfig.github_repo);
     }
     let trustedUsersIndex = chatConfig.trusted_users.findIndex(element => element == userId);
     if (trustedUsersIndex >= 0) {
@@ -474,6 +474,7 @@ function checkIfAppExists() {
     if (processObject == undefined) {
       // If the processObject was never opened, we open it
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
+      chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
       audioFileExtension = "." + gameMemory.audio_file_extension;
@@ -3008,9 +3009,9 @@ function getMemoryDataSize(addressName) {
 }
 
 var server = http.createServer(handleRequest);
-server.listen(8080);
+server.listen(chatConfig.webserver_port);
 
-console.log("Server started on port " + 8080);
+console.log("Server started on port " + chatConfig.webserver_port);
 
 function handleRequest(req, res) {
   // What did we request?
@@ -3082,6 +3083,7 @@ io.sockets.on('connection',
     if (processObject != undefined) {
       console.log("Client connected, app running");
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
+      chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
       audioFileExtension = "." + gameMemory.audio_file_extension;

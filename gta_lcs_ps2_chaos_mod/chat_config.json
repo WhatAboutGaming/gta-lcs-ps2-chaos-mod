@@ -1,4 +1,7 @@
 {
+  "webserver_port": 8080,
+  "github_message": "The source code for GTA LCS Chaos Mod can be found here:",
+  "github_repo": "https://github.com/WhatAboutGaming/gta-lcs-ps2-chaos-mod",
   "options": {
     "debug": true,
     "messagesLogLevel": "trace"
