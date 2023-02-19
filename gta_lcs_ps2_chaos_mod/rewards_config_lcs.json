@@ -33,7 +33,7 @@
     {
       "reward_description": "Beyblade",
       "custom_reward_id": "7f617057-c464-48ab-82de-36291f939812",
-      "action": "spin_car",
+      "action": "spin_player_vehicle",
       "timed_action": 0,
       "countdown": 59000,
       "queued_action": false,

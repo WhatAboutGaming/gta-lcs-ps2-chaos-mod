@@ -4,15 +4,15 @@ var path = require("path");
 var url = require("url");
 var memoryjs = require("memoryjs");
 var tmi = require("tmi.js");
-var isBusy = false;
 var moduleObject = undefined;
 var processObject = undefined;
 var processList = [];
 var vehiclePointers = [];
 var gameMemoryConfigFileName = "gta_lcs_memory.json";
 var rewardsConfigFileName = "rewards_config_lcs.json";
+var chatConfigFileName = "chat_config.json";
 var gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
-var chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
+var chatConfig = JSON.parse(fs.readFileSync(chatConfigFileName, "utf8"));
 var rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
 var beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
 var audioFileExtension = "." + gameMemory.audio_file_extension;
@@ -40,7 +40,7 @@ var gameTimeMinutesObject = {};
 var gameTimeMinutesToUnfreeze = 0;
 var gameTimeHoursObject = {};
 var gameTimeHoursToUnfreeze = 0;
-var freezeDuration = 30; // 10 minutes in game = 10 seconds irl
+var freezeDuration = 30; // 30 minutes in game = 30 seconds irl
 var playerPointerToFreeze = 0;
 var vehiclePointerToFreeze = 0;
 var playerLocationToFreezeObject = {};
@@ -211,9 +211,8 @@ function onConnectedHandler(addr, port) {
 }
 
 function onRawMessageHandler(messageCloned, message) {
-  let timeStamp = new Date().toISOString();
   if (chatConfig.logchat == true) {
-    console.log(timeStamp + " [CHAT] " + message.raw);
+    console.log(new Date().toISOString() + " [CHAT] " + message.raw);
   }
 }
 
@@ -226,7 +225,7 @@ function keepMovementFrozen() {
   let vehiclePointer = 0;
   playerPointerToFreeze = 0;
   vehiclePointerToFreeze = 0;
-  playerPointer = readFromAppMemory("Player Pointer").current_value;
+  playerPointer = playerPointerGlobal.current_value;
   if (playerPointer <= basePointerAddress || playerPointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -293,6 +292,9 @@ function keepMovementFrozen() {
 }
 
 function overrideGameSettings() {
+  if (gameMemory.override_game_settings == false) {
+    return;
+  }
   // Override some game settings to specific values when player pointer changes to a valid address
   console.log(new Date().toISOString() + " Overriding game settings");
   for (let gameMemoryToOverrideIndex = 0; gameMemoryToOverrideIndex < gameMemoryToOverride.length; gameMemoryToOverrideIndex++) {
@@ -350,8 +352,8 @@ function doCustomReward(username, message, channelName, customRewardId) {
         changeVehicleHealth(username, message, channelName, customRewardIndex);
         return;
       }
-      if (rewardsConfig.rewards[customRewardIndex].action == "spin_car") {
-        spinCar(username, message, channelName, customRewardIndex);
+      if (rewardsConfig.rewards[customRewardIndex].action == "spin_player_vehicle") {
+        spinPlayerVehicle(username, message, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "vehicle_color") {
@@ -474,7 +476,7 @@ function checkIfAppExists() {
     if (processObject == undefined) {
       // If the processObject was never opened, we open it
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
-      chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
+      chatConfig = JSON.parse(fs.readFileSync(chatConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
       audioFileExtension = "." + gameMemory.audio_file_extension;
@@ -540,14 +542,16 @@ function checkIfAppExists() {
     if (playerPointerGlobal.current_value != playerPointerGlobal.old_value) {
       if (playerPointerGlobal.current_value >= basePointerAddress && playerPointerGlobal.current_value <= endPointerAddress) {
         console.log(new Date().toISOString() + " Player Pointer now changed to a valid address");
-        overrideGameSettings();
+        if (gameMemory.override_game_settings == true) {
+          overrideGameSettings();
+        }
       }
     }
     //
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Position X").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Y").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Z").current_value)
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Health").current_value + " " + readFromAppPointer("Vehicle Pointer", "Vehicle ID").current_value);
     //let vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
-    //let playerPointer = readFromAppMemory("Player Pointer").current_value;
+    //let playerPointer = playerPointerGlobal.current_value;
     //let testVar = vehiclePointers.findIndex(element => element == vehiclePointer);
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Position Z").current_value);
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle ID").current_value);
@@ -2312,7 +2316,7 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
   }
 }
 
-function spinCar(username, message, channelName, customRewardIndex) {
+function spinPlayerVehicle(username, message, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -2732,7 +2736,8 @@ function writeToNotificationBox(text) {
   if (processObject == undefined) {
     return "Game is not running!";
   }
-  if (readFromAppMemory("Player Pointer").current_value <= basePointerAddress || readFromAppMemory("Player Pointer").current_value >= endPointerAddress) {
+  let playerPointer = readFromAppMemory("Player Pointer");
+  if (playerPointer.current_value <= basePointerAddress || playerPointer.current_value >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     return "Game is not ready!";
   }
@@ -3018,8 +3023,8 @@ function handleRequest(req, res) {
   var pathname = req.url;
 
   // If blank let's ask for index.html
-  if (pathname == '/') {
-    pathname = '/index.html';
+  if (pathname == "/") {
+    pathname = "/index.html";
   }
 
   // Ok what's our file extension
@@ -3052,7 +3057,7 @@ function handleRequest(req, res) {
       }
       // Otherwise, send the data, the contents of the file
       res.writeHead(200, {
-        'Content-Type': contentType
+        "Content-Type": contentType
       });
       res.end(data);
     }
@@ -3067,7 +3072,7 @@ var io = require("socket.io")(server);
 
 // Register a callback function to run when we have an individual connection
 // This is run for each individual user that connects
-io.sockets.on('connection',
+io.sockets.on("connection",
   // We are given a websocket object in our function
   function(socket) {
 
@@ -3083,7 +3088,7 @@ io.sockets.on('connection',
     if (processObject != undefined) {
       console.log("Client connected, app running");
       gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
-      chatConfig = JSON.parse(fs.readFileSync("chat_config.json", "utf8"));
+      chatConfig = JSON.parse(fs.readFileSync(chatConfigFileName, "utf8"));
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
       audioFileExtension = "." + gameMemory.audio_file_extension;
@@ -3144,7 +3149,7 @@ io.sockets.on('connection',
       io.to(socket.id).emit("mp3_files_list_object", mp3FilesListObject);
       io.to(socket.id).emit("game_memory_to_display", gameMemoryToDisplay);
     }
-    socket.on('disconnect', function() {
+    socket.on("disconnect", function() {
       console.log("Client has disconnected: " + socket.id);
     });
   }

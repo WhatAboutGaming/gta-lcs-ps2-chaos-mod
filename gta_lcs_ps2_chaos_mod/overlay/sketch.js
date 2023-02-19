@@ -116,17 +116,17 @@ function draw() {
     }
     //console.log("socket.connected = " + socket.connected);
     
-    if (gameMemoryToDisplay[currentValueToDisplay].decimal_points_to_display < 0) {
+    if (gameMemoryToDisplay[currentValueToDisplay].decimal_places_to_display < 0) {
       // Don't do anything
       //console.log("Test A");
-      //console.log(gameMemoryToDisplay[currentValueToDisplay].decimal_points_to_display);
+      //console.log(gameMemoryToDisplay[currentValueToDisplay].decimal_places_to_display);
       valueToDisplay = gameMemoryToDisplay[currentValueToDisplay].current_value;
     }
 
-    if (gameMemoryToDisplay[currentValueToDisplay].decimal_points_to_display >= 0) {
+    if (gameMemoryToDisplay[currentValueToDisplay].decimal_places_to_display >= 0) {
       //gameMemoryToDisplay[currentValueToDisplay].current_value = gameMemoryToDisplay[currentValueToDisplay].current_value.toFixed(2);
-      //gameMemoryToDisplay[currentValueToDisplay].current_value = gameMemoryToDisplay[currentValueToDisplay].current_value.toFixed(gameMemoryToDisplay[currentValueToDisplay].decimal_points_to_display);
-      valueToDisplay = gameMemoryToDisplay[currentValueToDisplay].current_value.toFixed(gameMemoryToDisplay[currentValueToDisplay].decimal_points_to_display);
+      //gameMemoryToDisplay[currentValueToDisplay].current_value = gameMemoryToDisplay[currentValueToDisplay].current_value.toFixed(gameMemoryToDisplay[currentValueToDisplay].decimal_places_to_display);
+      valueToDisplay = gameMemoryToDisplay[currentValueToDisplay].current_value.toFixed(gameMemoryToDisplay[currentValueToDisplay].decimal_places_to_display);
       //console.log("Test B");
     }
     if (gameMemoryToDisplay[currentValueToDisplay].display_total == false) {
