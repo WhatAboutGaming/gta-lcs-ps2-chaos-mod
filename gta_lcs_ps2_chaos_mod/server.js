@@ -206,8 +206,6 @@ function onMessageHandler(target, tags, message, self) {
 function onConnectedHandler(addr, port) {
   console.log("* Connected to " + addr + ":" + port);
   client.action(chatConfig.main_channel, new Date().toISOString() + " Connected! PogChamp");
-  //client.join("twitchplayspokemon"); // Join a channel
-  //client.raw("PING"); // This is how you send a raw line
 }
 
 function onRawMessageHandler(messageCloned, message) {
@@ -3040,7 +3038,9 @@ function handleRequest(req, res) {
     ".mp3": "audio/mpeg",
     ".png": "image/png",
     ".jpeg": "image/jpeg",
-    ".jpg": "image/jpeg"
+    ".jpg": "image/jpeg",
+    ".json": "application/json",
+    ".txt": "text/plain"
   };
 
   // What is it?  Default to plain text
@@ -3053,7 +3053,7 @@ function handleRequest(req, res) {
       // if there is an error
       if (err) {
         res.writeHead(500);
-        return res.end('Error loading ' + pathname);
+        return res.end("Error loading " + pathname);
       }
       // Otherwise, send the data, the contents of the file
       res.writeHead(200, {
