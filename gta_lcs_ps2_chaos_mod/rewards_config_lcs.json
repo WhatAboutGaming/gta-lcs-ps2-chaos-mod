@@ -179,6 +179,16 @@
       "queued_action": false,
       "wait_for_conditions_to_be_met": false,
       "cooldown": 0
+    },
+    {
+      "reward_description": "Flip All Vehicles Upside Down",
+      "custom_reward_id": "1bcc7b7c-202a-439f-af14-474e66aeaa87",
+      "action": "flip_all_vehicles",
+      "timed_action": 0,
+      "countdown": 59000,
+      "queued_action": false,
+      "wait_for_conditions_to_be_met": false,
+      "cooldown": 0
     }
   ]
 }

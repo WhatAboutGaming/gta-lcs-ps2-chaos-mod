@@ -113,6 +113,7 @@ function onMessageHandler(target, tags, message, self) {
   let customRewardId = tags["custom-reward-id"];
   let msgTimestamp = tags["tmi-sent-ts"];
   let userId = tags["user-id"];
+  let messageId = tags["id"];
   let messageWords = message.split(/\s+/ig);
   let messageToWrite = "";
   let finalUsername = "";
@@ -148,7 +149,7 @@ function onMessageHandler(target, tags, message, self) {
     messageToWrite = message;
     let githubPrefixCheck = /^[!\"#$%&'()*+,\-./:;%=%?@\[\\\]^_`{|}~¡¦¨«¬­¯°±»½⅔¾⅝⅞∅ⁿ№★†‡‹›¿‰℅æßçñ¹⅓¼⅛²⅜³⁴₱€¢£¥—–·„“”‚‘’•√π÷×¶∆′″§Π♣♠♥♪♦∞≠≈©®™✓‛‟❛❜❝❞❟❠❮❯⹂〝〞〟＂🙶🙷🙸󠀢⍻✅✔𐄂🗸‱]*\s*(github)+|(source(\s*code)*)+/ig.test(message);
     if (githubPrefixCheck == true) {
-      client.action(target, "@" + finalUsername + " " + chatConfig.github_message + " " + chatConfig.github_repo);
+      client.reply(target, "@" + finalUsername + " " + chatConfig.github_message + " " + chatConfig.github_repo, messageId);
     }
     let trustedUsersIndex = chatConfig.trusted_users.findIndex(element => element == userId);
     if (trustedUsersIndex >= 0) {
@@ -158,13 +159,13 @@ function onMessageHandler(target, tags, message, self) {
         // Uhhh do the thing to change the framelimiter in the game's memory
         if (processObject == undefined) {
           let returnMessage = "Can't toggle frame limiter, emulator is not running!";
-          client.action(target, "@" + finalUsername + " " + returnMessage);
+          client.reply(target, "@" + finalUsername + " " + returnMessage, messageId);
           return returnMessage;
         }
         let playerPointer = readFromAppMemory("Player Pointer").current_value;
         if (playerPointer <= basePointerAddress || playerPointer >= endPointerAddress) {
           let returnMessage = "Can't toggle frame limiter, game is not running!";
-          client.action(target, "@" + finalUsername + " " + returnMessage);
+          client.reply(target, "@" + finalUsername + " " + returnMessage, messageId);
           return returnMessage;
         }
         let frameLimiterValue = readFromAppMemory("Frame Limiter").current_value;
@@ -172,21 +173,21 @@ function onMessageHandler(target, tags, message, self) {
           writeToAppMemory("Frame Limiter", gameMemory.frame_limiter_options.frame_limiter_off);
           let returnMessage = "Disabled frame limiter!";
           writeToNotificationBox(returnMessage);
-          client.action(target, "@" + finalUsername + " " + returnMessage);
+          client.reply(target, "@" + finalUsername + " " + returnMessage, messageId);
           return returnMessage;
         }
         if (frameLimiterValue == gameMemory.frame_limiter_options.frame_limiter_off) {
           writeToAppMemory("Frame Limiter", gameMemory.frame_limiter_options.frame_limiter_on);
           let returnMessage = "Enabled frame limiter!";
           writeToNotificationBox(returnMessage);
-          client.action(target, "@" + finalUsername + " " + returnMessage);
+          client.reply(target, "@" + finalUsername + " " + returnMessage, messageId);
           return returnMessage;
         }
       }
     }
     if (customRewardId != undefined) {
       console.log(new Date().toISOString() + " CUSTOM REWARD ID " + customRewardId);
-      doCustomReward(finalUsername, message, target, customRewardId);
+      doCustomReward(finalUsername, message, messageId, target, customRewardId);
     }
     if (customRewardId == undefined) {
       let processedMessage = processTextForNotificationBox(messageToWrite);
@@ -326,7 +327,7 @@ function doTimedAction() {
   keepMovementFrozen();
 }
 
-function doCustomReward(username, message, channelName, customRewardId) {
+function doCustomReward(username, message, msgId, channelName, customRewardId) {
   let notifMessage = "";
   if (customRewardId == undefined) {
     return;
@@ -339,75 +340,79 @@ function doCustomReward(username, message, channelName, customRewardId) {
     if (customRewardIndex > -1) {
       //console.log(rewardsConfig.rewards[customRewardIndex].custom_reward_id);
       if (rewardsConfig.rewards[customRewardIndex].action == "warp") {
-        prepareToWarp(username, message, channelName, customRewardIndex);
+        prepareToWarp(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "player_health") {
-        changePlayerHealth(username, message, channelName, customRewardIndex);
+        changePlayerHealth(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "vehicle_health") {
-        changeVehicleHealth(username, message, channelName, customRewardIndex);
+        changeVehicleHealth(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "spin_player_vehicle") {
-        spinPlayerVehicle(username, message, channelName, customRewardIndex);
+        spinPlayerVehicle(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "vehicle_color") {
-        changeVehicleColor(username, message, channelName, customRewardIndex);
+        changeVehicleColor(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "flip_vehicle") {
-        flipVehicleUpsideDown(username, message, channelName, customRewardIndex);
+        flipVehicleUpsideDown(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "turn_around") {
-        turnAround(username, message, channelName, customRewardIndex);
+        turnAround(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "change_speed") {
-        changeSpeed(username, message, channelName, customRewardIndex);
+        changeSpeed(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "radio_station") {
-        changeRadioStation(username, message, channelName, customRewardIndex);
+        changeRadioStation(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "add_vehicle_to_garage") {
-        addVehicleToGarage(username, message, channelName, customRewardIndex);
+        addVehicleToGarage(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "take_weapons_away") {
-        takeWeaponsAway(username, message, channelName, customRewardIndex);
+        takeWeaponsAway(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "change_wanted_level") {
-        changeWantedLevel(username, message, channelName, customRewardIndex);
+        changeWantedLevel(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "change_time") {
-        changeTime(username, message, channelName, customRewardIndex);
+        changeTime(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "player_armor") {
-        changePlayerArmor(username, message, channelName, customRewardIndex);
+        changePlayerArmor(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "freeze_movement") {
-        freezeMovement(username, message, channelName, customRewardIndex);
+        freezeMovement(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "drop_vehicle_pool_on_player") {
-        dropVehiclePoolOnPlayer(username, message, channelName, customRewardIndex);
+        dropVehiclePoolOnPlayer(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "drop_pedestrian_pool_on_player") {
-        dropPedestrianPoolOnPlayer(username, message, channelName, customRewardIndex);
+        dropPedestrianPoolOnPlayer(username, message, msgId, channelName, customRewardIndex);
         return;
       }
       if (rewardsConfig.rewards[customRewardIndex].action == "spin_all_vehicles") {
-        spinAllVehicles(username, message, channelName, customRewardIndex);
+        spinAllVehicles(username, message, msgId, channelName, customRewardIndex);
+        return;
+      }
+      if (rewardsConfig.rewards[customRewardIndex].action == "flip_all_vehicles") {
+        flipAllVehiclesUpsideDown(username, message, msgId, channelName, customRewardIndex);
         return;
       }
     }
@@ -545,6 +550,7 @@ function checkIfAppExists() {
         }
       }
     }
+    //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Optimization Flag 1").current_value + " " + readFromAppPointer("Vehicle Pointer", "Vehicle Optimization Flag 2").current_value); // One of these flags can be used to instantly explode vehicle, what value and flag is it?
     //
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Position X").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Y").current_value + "," + readFromAppPointer("Vehicle Pointer", "Vehicle Position Z").current_value)
     //console.log(readFromAppPointer("Vehicle Pointer", "Vehicle Health").current_value + " " + readFromAppPointer("Vehicle Pointer", "Vehicle ID").current_value);
@@ -652,12 +658,219 @@ function checkIfValueChanged(addressName) {
   return gameMemory.memory_data[memoryIndex];
 }
 
-function spinAllVehicles(username, message, channelName, customRewardIndex) {
+function flipAllVehiclesUpsideDown(username, message, msgId, channelName, customRewardIndex) {
+  // DOES NOT WORK WITH OPTIMIZED TRAFFIC VEHICLES! (OR PARKED VEHICLES)
+  let returnMessage = "";
+  if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
+    returnMessage = "Can't flip vehicles upside, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
+    return returnMessage;
+  }
+  rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
+  let playerPointer = 0;
+  let vehiclePointer = 0;
+  if (processObject == undefined) {
+    //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
+    returnMessage = "Can't flip vehicles upside down, game is not running, please request a refund!";
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
+    return returnMessage;
+  }
+  playerPointer = readFromAppMemory("Player Pointer").current_value;
+  if (playerPointer <= basePointerAddress || playerPointer >= endPointerAddress) {
+    //console.log("Don't do anything I guess");
+    //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
+    returnMessage = "Can't flip vehicles upside down, game is not ready, please request a refund!";
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
+    return returnMessage;
+  }
+  vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
+  let vehiclePointerPool = readFromAppBuffer("Vehicle pool", getMemoryDataSize("Vehicle pool")).current_value;
+  let vehiclePointerSize = 4;
+  let totalVehiclesInPool = getMemoryDataSize("Vehicle pool") / vehiclePointerSize;
+
+  let playerLocationToDropVehiclesOn = {};
+  let vehicleLocationToDropVehiclesOn = {};
+  let vehiclesAlreadyUsed = [];
+
+  let vehicleIdData = readFromAppMemory("Vehicle ID");
+  let vehicleIdDataType = vehicleIdData.data_type;
+  let vehicleIdOffset = parseInt(vehicleIdData.offset, 16);
+  let vehicleXPositionData = readFromAppMemory("Vehicle Position X");
+  let vehicleYPositionData = readFromAppMemory("Vehicle Position Y");
+  let vehicleZPositionData = readFromAppMemory("Vehicle Position Z");
+  let vehicleRotationSpeedZData = readFromAppMemory("Vehicle Rotation Speed Z");
+  let vehicleRotationNS = readFromAppMemory("Vehicle Rotation NS");
+  let vehicleRotationEW = readFromAppMemory("Vehicle Rotation EW");
+  let vehicleRotationTiltLR = readFromAppMemory("Vehicle Rotation Tilt LR");
+  let vehicleOptimizationFlag1Data = readFromAppMemory("Vehicle Optimization Flag 1");
+  let vehicleOptimizationFlag2Data = readFromAppMemory("Vehicle Optimization Flag 2");
+  let gameBaseAddress = baseMemoryAddress;
+  let initialZPositionDifference = 3; // Start first vehicle to drop 3 units higher than where the player is, to make sure no vehicles overlap each other, 3 units seems to be the most optmized height possible, Linerunner is the tallest vehicle in game, and with 3 units high, the vehicles will spawn right on top of the Linerunner with pretty much no space between the vehicles
+  //console.log(vehicleOptimizationFlag1Data);
+  //console.log(vehicleOptimizationFlag2Data);
+
+  // Get coordinates for player
+  playerLocationToDropVehiclesOn = {
+    playerPositionX: readFromAppPointer("Player Pointer", "Player Position X").current_value,
+    playerPositionY: readFromAppPointer("Player Pointer", "Player Position Y").current_value,
+    playerPositionZ: readFromAppPointer("Player Pointer", "Player Position Z").current_value,
+    playerSpeedX: readFromAppPointer("Player Pointer", "Player Speed X").current_value,
+    playerSpeedY: readFromAppPointer("Player Pointer", "Player Speed Y").current_value,
+    playerSpeedZ: readFromAppPointer("Player Pointer", "Player Speed Z").current_value,
+    playerHeading: readFromAppPointer("Player Pointer", "Player Heading").current_value
+  };
+  vehicleLocationToDropVehiclesOn = {
+    vehiclePositionX: playerLocationToDropVehiclesOn.playerPositionX,
+    vehiclePositionY: playerLocationToDropVehiclesOn.playerPositionY,
+    vehiclePositionZ: playerLocationToDropVehiclesOn.playerPositionZ,
+    vehicleSpeedX: playerLocationToDropVehiclesOn.playerSpeedX,
+    vehicleSpeedY: playerLocationToDropVehiclesOn.playerSpeedY,
+    vehicleSpeedZ: playerLocationToDropVehiclesOn.playerSpeedZ,
+    vehicleRotationNS: 1,
+    vehicleRotationEW: 0,
+    vehicleRotationTiltLR: 0,
+    vehicleRotationEW2: 0,
+    vehicleRotationNS2: 1,
+    vehicleRotationTiltUD: 0,
+    vehicleRotationSpeedX: 0,
+    vehicleRotationSpeedY: 0,
+    vehicleRotationSpeedZ: 0
+  };
+
+  if (vehiclePointer > basePointerAddress && vehiclePointer < endPointerAddress) {
+    vehiclePointerToFreeze = vehiclePointer;
+    // Get coordinates for vehicle player is driving
+    vehicleLocationToDropVehiclesOn = {
+      vehiclePositionX: readFromAppPointer("Vehicle Pointer", "Vehicle Position X").current_value,
+      vehiclePositionY: readFromAppPointer("Vehicle Pointer", "Vehicle Position Y").current_value,
+      vehiclePositionZ: readFromAppPointer("Vehicle Pointer", "Vehicle Position Z").current_value,
+      vehicleSpeedX: readFromAppPointer("Vehicle Pointer", "Vehicle Speed X").current_value,
+      vehicleSpeedY: readFromAppPointer("Vehicle Pointer", "Vehicle Speed Y").current_value,
+      vehicleSpeedZ: readFromAppPointer("Vehicle Pointer", "Vehicle Speed Z").current_value,
+      vehicleRotationNS: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS").current_value,
+      vehicleRotationEW: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation EW").current_value,
+      vehicleRotationTiltLR: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt LR").current_value,
+      vehicleRotationEW2: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation EW 2").current_value,
+      vehicleRotationNS2: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS 2").current_value,
+      vehicleRotationTiltUD: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt UD").current_value,
+      vehicleRotationSpeedX: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed X").current_value,
+      vehicleRotationSpeedY: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y").current_value,
+      vehicleRotationSpeedZ: readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Z").current_value,
+    };
+    playerLocationToDropVehiclesOn.playerPositionX = vehicleLocationToDropVehiclesOn.vehiclePositionX;
+    playerLocationToDropVehiclesOn.playerPositionY = vehicleLocationToDropVehiclesOn.vehiclePositionY;
+    playerLocationToDropVehiclesOn.playerPositionZ = vehicleLocationToDropVehiclesOn.vehiclePositionZ;
+    playerLocationToDropVehiclesOn.playerSpeedX = vehicleLocationToDropVehiclesOn.vehicleSpeedX;
+    playerLocationToDropVehiclesOn.playerSpeedY = vehicleLocationToDropVehiclesOn.vehicleSpeedY;
+    playerLocationToDropVehiclesOn.playerSpeedZ = vehicleLocationToDropVehiclesOn.vehicleSpeedZ;
+    //writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Z", 10);
+    writeToAppPointer("Vehicle Pointer", "Vehicle Rotation NS", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation NS").current_value));
+    writeToAppPointer("Vehicle Pointer", "Vehicle Rotation EW", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation EW").current_value));
+    writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt LR", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt LR").current_value));
+  }
+  //console.log(vehicleLocationToDropVehiclesOn.vehiclePositionX + "," + vehicleLocationToDropVehiclesOn.vehiclePositionY + "," + vehicleLocationToDropVehiclesOn.vehiclePositionZ);
+  initialZPositionDifference = vehicleLocationToDropVehiclesOn.vehiclePositionZ + 3;
+  //console.log(vehicleLocationToDropVehiclesOn.vehiclePositionX + "," + vehicleLocationToDropVehiclesOn.vehiclePositionY + "," + initialZPositionDifference);
+
+  for (let vehicleInPoolIndex = 0; vehicleInPoolIndex < totalVehiclesInPool; vehicleInPoolIndex++) {
+    //let vehiclePointerValue = vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 0];
+    let vehiclePointerToRead = vehicleInPoolIndex;
+    let vehiclePointerValue = (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 3] << 24) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 2] << 16) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 1] << 8) | (vehiclePointerPool[(vehiclePointerToRead * vehiclePointerSize) + 0]);
+    if (vehiclePointerValue > basePointerAddress && vehiclePointerValue < endPointerAddress) {
+      //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0"));
+      //let vehicleIdOffset = parseInt(readFromAppMemory("Vehicle ID").offset, 16);
+      //let vehicleXPositionOffset = parseInt(readFromAppMemory("Vehicle X Position").offset, 16);
+      //let vehicleYPositionOffset = parseInt(readFromAppMemory("Vehicle Y Position").offset, 16);
+      //let vehicleZPositionOffset = parseInt(readFromAppMemory("Vehicle Z Position").offset, 16);
+      //let gameBaseAddress = baseMemoryAddress;
+      //let vehicleIdAddress = vehiclePointerValue + gameBaseAddress + vehicleIdOffset;
+      let vehicleId = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, vehicleIdOffset, vehicleIdDataType, undefined);
+      let vehicleRotationNSToRead = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationNS.offset, 16), vehicleRotationNS.data_type, undefined);
+      let vehicleRotationEWToRead = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationEW.offset, 16), vehicleRotationEW.data_type, undefined);
+      let vehicleRotationTiltLRToRead = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationTiltLR.offset, 16), vehicleRotationTiltLR.data_type, undefined);
+      let vehicleIdToFind = gameMemory.vehicle_data.findIndex(element => element.id == vehicleId);
+      //console.log(vehicleId);
+      //console.log(vehicleIdToFind);
+      /*
+      if (vehiclePointerToRead == 56) {
+        console.log(vehiclePointerToRead);
+        console.log(vehicleId);
+      }
+      */
+      //console.log(vehiclePointerToRead);
+      //console.log(vehicleId);
+      //vehicleId = vehiclePointerValue + baseMemoryAddress;
+      //console.log(vehicleIdAddress.toString("16").toUpperCase().padStart(8, "0"));
+      if (vehicleIdToFind >= 1) {
+        /*
+        if (vehiclePointerValue == vehiclePointer) {
+          console.log("Ignore this vehicle!");
+        }
+        */
+        if (vehiclePointerValue != vehiclePointer) {
+          let usedVehicleToFindIndex = vehiclesAlreadyUsed.findIndex(element => element == vehiclePointerValue);
+          /*
+          if (usedVehicleToFindIndex >= 0) {
+            console.log("[USED VEHICLE] usedVehicleToFindIndex = " + usedVehicleToFindIndex + ",vehiclesAlreadyUsed[usedVehicleToFindIndex] = 0x" + vehiclesAlreadyUsed[usedVehicleToFindIndex].toString("16").toUpperCase().padStart(8, "0"));
+            console.log("[USED VEHICLE] vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0") +  " , gameMemory.vehicle_data[vehicleIdToFind].name = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+          }
+          */
+          if (usedVehicleToFindIndex <= -1) {
+            //console.log("usedVehicleToFindIndex = " + usedVehicleToFindIndex);
+            vehiclesAlreadyUsed.push(vehiclePointerValue);
+            //console.log(vehiclesAlreadyUsed);
+            //console.log("Don't ignore this vehicle!");
+            //console.log(vehicleXPositionData);
+            //console.log(vehicleYPositionData);
+            //console.log(vehicleZPositionData);
+            //let vehicleXPosition = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleXPositionData.offset, 16), vehicleXPositionData.data_type, undefined);
+            //let vehicleYPosition = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleYPositionData.offset, 16), vehicleYPositionData.data_type, undefined);
+            //let vehicleZPosition = readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleZPositionData.offset, 16), vehicleZPositionData.data_type, undefined);
+            //console.log("BEFORE " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag1Data.offset, 16), vehicleOptimizationFlag1Data.data_type, undefined));
+            //console.log("BEFORE " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag2Data.offset, 16), vehicleOptimizationFlag2Data.data_type, undefined));
+            //console.log(vehicleXPosition + "," + vehicleYPosition + "," + vehicleZPosition);
+            //console.log(vehicleLocationToDropVehiclesOn.vehiclePositionX + "," + vehicleLocationToDropVehiclesOn.vehiclePositionY + "," + initialZPositionDifference);
+            writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag1Data.offset, 16), 0x34, vehicleOptimizationFlag1Data.data_type, undefined); // Set to 0x24 (36) to make vehicle work like optimized vehicle, set to 0x34 (52) to make vehicle work like normal vehicle
+            writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag2Data.offset, 16), 0, vehicleOptimizationFlag2Data.data_type, undefined); // Set to 0x00 (0) to make vehicle work like normal, set to 0x0A (10) to make it work like optimized vehicle
+  
+            //writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleXPositionData.offset, 16), vehicleLocationToDropVehiclesOn.vehiclePositionX, vehicleXPositionData.data_type, undefined);
+            //writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleYPositionData.offset, 16), vehicleLocationToDropVehiclesOn.vehiclePositionY, vehicleYPositionData.data_type, undefined);
+            //writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleZPositionData.offset, 16), initialZPositionDifference, vehicleZPositionData.data_type, undefined);
+            //writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationSpeedZData.offset, 16), 10, vehicleRotationSpeedZData.data_type, undefined);
+            writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationNS.offset, 16), invertNumberSign(vehicleRotationNSToRead), vehicleRotationNS.data_type, undefined);
+            writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationEW.offset, 16), invertNumberSign(vehicleRotationEWToRead), vehicleRotationEW.data_type, undefined);
+            writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationTiltLR.offset, 16), invertNumberSign(vehicleRotationTiltLRToRead), vehicleRotationTiltLR.data_type, undefined);
+  
+            writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag1Data.offset, 16), 0x34, vehicleOptimizationFlag1Data.data_type, undefined); // Set to 0x24 (36) to make vehicle work like optimized vehicle, set to 0x34 (52) to make vehicle work like normal vehicle
+            writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag2Data.offset, 16), 0, vehicleOptimizationFlag2Data.data_type, undefined); // Set to 0x00 (0) to make vehicle work like normal, set to 0x0A (10) to make it work like optimized vehicle
+
+            //writeToCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleRotationSpeedZ.offset, 16), initialZPositionDifference, vehicleZPositionData.data_type, undefined);
+  
+            //console.log("AFTER  " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag1Data.offset, 16), vehicleOptimizationFlag1Data.data_type, undefined));
+            //console.log("AFTER  " + readFromCustomMemoryAddress(vehiclePointerValue + gameBaseAddress, parseInt(vehicleOptimizationFlag2Data.offset, 16), vehicleOptimizationFlag2Data.data_type, undefined));
+            //initialZPositionDifference = initialZPositionDifference + 3;
+            //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0") +  " , gameMemory.vehicle_data[vehicleIdToFind].name = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+          }
+        }
+        //console.log("vehiclePointerToRead = " + vehiclePointerToRead.toString().padStart(2, "0") + " , vehiclePointerValue = 0x" + vehiclePointerValue.toString("16").toUpperCase().padStart(8, "0") +  " , gameMemory.vehicle_data[vehicleIdToFind].name = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+        //console.log(vehiclePointerToRead.toString().padStart(2, "0") + " = " + gameMemory.vehicle_data[vehicleIdToFind].name);
+      }
+      //console.log(parseInt(readFromAppMemory("Vehicle ID").offset, 16));
+    }
+  }
+  returnMessage = "Flipped all vehicles upside down!";
+  writeToNotificationBox(returnMessage);
+  client.reply(channelName, "@" + username + " " + returnMessage, msgId);
+  //io.sockets.emit("play_sound", "Beyblade");
+  return returnMessage;
+}
+
+function spinAllVehicles(username, message, msgId, channelName, customRewardIndex) {
   // DOES NOT WORK WITH OPTIMIZED TRAFFIC VEHICLES! (OR PARKED VEHICLES)
   let returnMessage = "";
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't spin vehicles, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -666,7 +879,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicles, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -674,7 +887,7 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicles, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
@@ -842,17 +1055,17 @@ function spinAllVehicles(username, message, channelName, customRewardIndex) {
   }
   returnMessage = "LET IT RIP! (EXTREME!)";
   writeToNotificationBox(returnMessage);
-  client.action(channelName, "@" + username + " " + returnMessage);
+  client.reply(channelName, "@" + username + " " + returnMessage, msgId);
   io.sockets.emit("play_sound", "Beyblade");
   return returnMessage;
 }
 
-function dropPedestrianPoolOnPlayer(username, message, channelName, customRewardIndex) {
+function dropPedestrianPoolOnPlayer(username, message, msgId, channelName, customRewardIndex) {
   // THIS IS BROKEN AND I DON'T KNOW WHY, I THINK WHAT I THOUGHT WAS THE PLAYER POOL ISN'T ACTUALLY THE PLAYER POOL, HAVE TO FIND THE REAL PLAYER POOL (?????????????????????????????)
   let returnMessage = "";
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't throw pedestrians on player, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -861,7 +1074,7 @@ function dropPedestrianPoolOnPlayer(username, message, channelName, customReward
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't throw pedestrians on player, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -869,7 +1082,7 @@ function dropPedestrianPoolOnPlayer(username, message, channelName, customReward
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't throw pedestrians on player, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
@@ -1018,15 +1231,15 @@ function dropPedestrianPoolOnPlayer(username, message, channelName, customReward
   }
   returnMessage = "Successfully threw all pedestrians on player!";
   writeToNotificationBox(returnMessage);
-  client.action(channelName, "@" + username + " " + returnMessage);
+  client.reply(channelName, "@" + username + " " + returnMessage, msgId);
   return returnMessage;
 }
 
-function dropVehiclePoolOnPlayer(username, message, channelName, customRewardIndex) {
+function dropVehiclePoolOnPlayer(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't throw vehicles on player, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1035,7 +1248,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't throw vehicles on player, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1043,7 +1256,7 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't throw vehicles on player, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
@@ -1208,16 +1421,16 @@ function dropVehiclePoolOnPlayer(username, message, channelName, customRewardInd
   }
   returnMessage = "Successfully threw all vehicles on player!";
   writeToNotificationBox(returnMessage);
-  client.action(channelName, "@" + username + " " + returnMessage);
+  client.reply(channelName, "@" + username + " " + returnMessage, msgId);
   return returnMessage;
 }
 
-function freezeMovement(username, message, channelName, customRewardIndex) {
+function freezeMovement(username, message, msgId, channelName, customRewardIndex) {
   //
   let returnMessage = "";
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't freeze movement, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1234,7 +1447,7 @@ function freezeMovement(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't freeze movement, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1242,7 +1455,7 @@ function freezeMovement(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't freeze movement, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(msgWords[0], 10)) == true) {
@@ -1348,11 +1561,11 @@ function freezeMovement(username, message, channelName, customRewardIndex) {
   freezeMovementState = true;
   returnMessage = "Unless time is changed or game is in slow motion when movement is still frozen, movement should unfreeze in about " + freezeDuration + " seconds, will unfreeze at " + gameTimeHoursToUnfreeze.toString().padStart(2, "0") + ":" + gameTimeMinutesToUnfreeze.toString().padStart(2, "0") + "! The time is " + gameTimeHoursObject.current_value.toString().padStart(2, "0") + ":" + gameTimeMinutesObject.current_value.toString().padStart(2, "0") + "!";
   writeToNotificationBox(returnMessage);
-  client.action(channelName, "@" + username + " " + returnMessage);
+  client.reply(channelName, "@" + username + " " + returnMessage, msgId);
   return returnMessage;
 }
 
-function changePlayerArmor(username, message, channelName, customRewardIndex) {
+function changePlayerArmor(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -1361,7 +1574,7 @@ function changePlayerArmor(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change armor, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1370,7 +1583,7 @@ function changePlayerArmor(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change armor, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1378,20 +1591,20 @@ function changePlayerArmor(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change armor, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == true) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change armor, invalid armor number, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == false) {
     if (Number(msgWords[0]) < 0 || Number(msgWords[0]) > 200) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       returnMessage = "Can't change armor, invalid armor number, please make sure armor is between 0 and 200, please request a refund!";
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (Number(msgWords[0]) >= 0 && Number(msgWords[0]) <= 200) {
@@ -1400,13 +1613,13 @@ function changePlayerArmor(username, message, channelName, customRewardIndex) {
       let playerArmor = readFromAppPointer("Player Pointer", "Player Armor").current_value;
       returnMessage = "Successfully changed armor to " + playerArmor + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
   }
 }
 
-function changeTime(username, message, channelName, customRewardIndex) {
+function changeTime(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -1415,7 +1628,7 @@ function changeTime(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change time, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1427,7 +1640,7 @@ function changeTime(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change time, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1435,18 +1648,18 @@ function changeTime(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change time, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(msgWords[0], 10)) == true || isNaN(parseInt(msgWords[1], 10)) == true) {
     returnMessage = "Can't change time, invalid time, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(msgWords[0], 10)) == false && isNaN(parseInt(msgWords[1], 10)) == false) {
     if (parseInt(msgWords[0], 10) < 0 || parseInt(msgWords[0], 10) > 255 || parseInt(msgWords[1], 10) < 0 || parseInt(msgWords[1], 10) > 255) {
       returnMessage = "Can't change time, invalid time, please make sure hours and minutes are both between 0 and 255, please request a refund!";
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (parseInt(msgWords[0], 10) >= 0 && parseInt(msgWords[0], 10) <= 255 && parseInt(msgWords[1], 10) >= 0 && parseInt(msgWords[1], 10) <= 255) {
@@ -1456,7 +1669,7 @@ function changeTime(username, message, channelName, customRewardIndex) {
       timeMinutes = readFromAppMemory("Minutes").current_value;
       returnMessage = "Successfully changed time to " + timeHours.toString().padStart(2, "0") + ":" + timeMinutes.toString().padStart(2, "0") + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       gameTimeMinutesToUnfreeze = timeMinutes;
       gameTimeHoursToUnfreeze = timeHours;
       //freezeMovementState = false;
@@ -1465,7 +1678,7 @@ function changeTime(username, message, channelName, customRewardIndex) {
   }
 }
 
-function changeWantedLevel2(username, message, channelName, customRewardIndex) {
+function changeWantedLevel2(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -1474,7 +1687,7 @@ function changeWantedLevel2(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change wanted level, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1487,7 +1700,7 @@ function changeWantedLevel2(username, message, channelName, customRewardIndex) {
     console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change wanted level, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1495,18 +1708,18 @@ function changeWantedLevel2(username, message, channelName, customRewardIndex) {
     console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change wanted level, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(msgWords[0], 10)) == true) {
     console.log("Don't do anything I guess");
     returnMessage = "Can't change wanted level, invalid wanted level, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
 }
 
-function changeWantedLevel(username, message, channelName, customRewardIndex) {
+function changeWantedLevel(username, message, msgId, channelName, customRewardIndex) {
   console.log("WANTED LEVEL");
   let returnMessage = "";
   /*
@@ -1516,7 +1729,7 @@ function changeWantedLevel(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change wanted level, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1528,7 +1741,7 @@ function changeWantedLevel(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change wanted level, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1536,18 +1749,18 @@ function changeWantedLevel(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change wanted level, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(msgWords[0], 10)) == true) {
     returnMessage = "Can't change wanted level, invalid wanted level, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(msgWords[0], 10)) == false) {
     if (parseInt(msgWords[0], 10) < 0 || parseInt(msgWords[0], 10) > 6) {
       returnMessage = "Can't change wanted level, invalid wanted level, please make sure wanted level is between 0 and 6, please request a refund!";
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (parseInt(msgWords[0], 10) >= 0 && parseInt(msgWords[0], 10) <= 6) {
@@ -1559,18 +1772,18 @@ function changeWantedLevel(username, message, channelName, customRewardIndex) {
       wantedLevel = readFromAppPointer("Player Pointer", "Wanted Level").current_value;
       returnMessage = "Successfully changed wanted level to " + wantedLevel + " star and chaos level to " + chaosLevel + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
   }
   console.log("WANTED LEVEL");
 }
 
-function takeWeaponsAway(username, message, channelName, customRewardIndex) {
+function takeWeaponsAway(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't take weapons away or return weapons back to player, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1606,7 +1819,7 @@ function takeWeaponsAway(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't take weapons away or return weapons back to player, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1614,7 +1827,7 @@ function takeWeaponsAway(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't take weapons away or return weapons back to player, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   doesWeaponDataExist = fs.existsSync("weapon_data.bin")
@@ -1640,7 +1853,7 @@ function takeWeaponsAway(username, message, channelName, customRewardIndex) {
       console.log("weapon_data.bin doesn't exist, creating a template!");
       fs.writeFileSync("weapon_data.bin", emptyWeaponInventoryBuffer, "binary");
       returnMessage = "Can't return weapons back to player, there are no weapons to return, please request a refund!";
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (doesWeaponDataExist == true) {
@@ -1665,13 +1878,13 @@ function takeWeaponsAway(username, message, channelName, customRewardIndex) {
       if (takeWeaponsAway2 == true) {
         returnMessage = "Successfully returned weapons back to player, redeem this reward again to take weapons away!";
         writeToNotificationBox(returnMessage);
-        client.action(channelName, "@" + username + " " + returnMessage);
+        client.reply(channelName, "@" + username + " " + returnMessage, msgId);
         return returnMessage;
       }
       if (takeWeaponsAway2 == false) {
         returnMessage = "Can't return weapons back to player, inventory is still empty, please request a refund!";
         //writeToNotificationBox(returnMessage);
-        client.action(channelName, "@" + username + " " + returnMessage);
+        client.reply(channelName, "@" + username + " " + returnMessage, msgId);
         return returnMessage;
       }
     }
@@ -1682,7 +1895,7 @@ function takeWeaponsAway(username, message, channelName, customRewardIndex) {
     writeToAppPointerBuffer("Player Pointer", "Player Weapon Inventory", emptyWeaponInventoryBuffer);
     returnMessage = "Successfully took weapons away, redeem this reward again to return weapons back to player!";
     writeToNotificationBox(returnMessage);
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   /*
@@ -1722,7 +1935,7 @@ function takeWeaponsAway(username, message, channelName, customRewardIndex) {
   //console.log(emptyWeaponInventoryBuffer);
 }
 
-function addVehicleToGarage(username, message, channelName, customRewardIndex) {
+function addVehicleToGarage(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -1731,7 +1944,7 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't spawn vehicle in garages, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1741,7 +1954,7 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spawn vehicle in garages, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1749,7 +1962,7 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spawn vehicle in garages, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1758,7 +1971,7 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
   if (vehicleToFind == -1) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spawn vehicle in garages, invalid vehicle name, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   //console.log("gameMemory.vehicle_flags");
@@ -1841,11 +2054,11 @@ function addVehicleToGarage(username, message, channelName, customRewardIndex) {
     returnMessage = "Spawned " + gameMemory.vehicle_data[vehicleToFind].name + " in garages!";
   }
   writeToNotificationBox(returnMessage);
-  client.action(channelName, "@" + username + " " + returnMessage);
+  client.reply(channelName, "@" + username + " " + returnMessage, msgId);
   return returnMessage;
 }
 
-function changeRadioStation(username, message, channelName, customRewardIndex) {
+function changeRadioStation(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -1854,7 +2067,7 @@ function changeRadioStation(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change radio station, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1865,7 +2078,7 @@ function changeRadioStation(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change radio station, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1874,14 +2087,14 @@ function changeRadioStation(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change radio station, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer <= basePointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change radio station, player is not in a vehicle, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer > basePointerAddress && vehiclePointer < endPointerAddress) {
@@ -1891,7 +2104,7 @@ function changeRadioStation(username, message, channelName, customRewardIndex) {
     if (radioStationToFind == -1) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       returnMessage = "Can't change radio station, invalid radio station, please request a refund!";
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1899,12 +2112,12 @@ function changeRadioStation(username, message, channelName, customRewardIndex) {
     writeToAppMemory("Radio Station", gameMemory.radio_data[radioStationToFind].id);
     returnMessage = "Changed radio station to " + gameMemory.radio_data[radioStationToFind].name + "!";
     writeToNotificationBox(returnMessage);
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
 }
 
-function changeSpeed(username, message, channelName, customRewardIndex) {
+function changeSpeed(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -1913,7 +2126,7 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change speed, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -1928,7 +2141,7 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change speed, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -1937,7 +2150,7 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change speed, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == true) {
@@ -1956,13 +2169,13 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
       vehicleSpeed = readFromAppPointer("Vehicle Pointer", "Vehicle Linear Speed Unsigned").current_value.toFixed(4);
       returnMessage = "Invalid multiplier, using " + defaultMultiplier + "x multiplier, changed vehicle speed to " + vehicleSpeed + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     playerSpeed = readFromAppPointer("Player Pointer", "Player Linear Speed Unsigned").current_value.toFixed(4);
     returnMessage = "Invalid multiplier, using " + defaultMultiplier + "x multiplier, changed player speed to " + playerSpeed + "!";
     writeToNotificationBox(returnMessage);
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == false) {
@@ -1982,13 +2195,13 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
         vehicleSpeed = readFromAppPointer("Vehicle Pointer", "Vehicle Linear Speed Unsigned").current_value.toFixed(4);
         returnMessage = "Invalid multiplier, using " + defaultMultiplier + "x multiplier, changed vehicle speed to " + vehicleSpeed + "!";
         writeToNotificationBox(returnMessage);
-        client.action(channelName, "@" + username + " " + returnMessage);
+        client.reply(channelName, "@" + username + " " + returnMessage, msgId);
         return returnMessage;
       }
       playerSpeed = readFromAppPointer("Player Pointer", "Player Linear Speed Unsigned").current_value.toFixed(4);
       returnMessage = "Invalid multiplier, using " + defaultMultiplier + "x multiplier, changed player speed to " + playerSpeed + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (Number(msgWords[0]) >= -10 && Number(msgWords[0]) <= 10) {
@@ -2011,19 +2224,19 @@ function changeSpeed(username, message, channelName, customRewardIndex) {
         vehicleSpeed = readFromAppPointer("Vehicle Pointer", "Vehicle Linear Speed Unsigned").current_value.toFixed(4);
         returnMessage = "Set multiplier to " + customMultiplier + "x, changed vehicle speed to " + vehicleSpeed + "!";
         writeToNotificationBox(returnMessage);
-        client.action(channelName, "@" + username + " " + returnMessage);
+        client.reply(channelName, "@" + username + " " + returnMessage, msgId);
         return returnMessage;
       }
       playerSpeed = readFromAppPointer("Player Pointer", "Player Linear Speed Unsigned").current_value.toFixed(4);
       returnMessage = "Set multiplier to " + customMultiplier + "x, changed player speed to " + playerSpeed + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
   }
 }
 
-function turnAround(username, message, channelName, customRewardIndex) {
+function turnAround(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -2032,7 +2245,7 @@ function turnAround(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't turn around, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2042,7 +2255,7 @@ function turnAround(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't turn around, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
@@ -2051,7 +2264,7 @@ function turnAround(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't turn around, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   /*
@@ -2085,12 +2298,12 @@ function turnAround(username, message, channelName, customRewardIndex) {
   }
   returnMessage = "Turned around!";
   writeToNotificationBox(returnMessage);
-  client.action(channelName, "@" + username + " " + returnMessage);
+  client.reply(channelName, "@" + username + " " + returnMessage, msgId);
   return returnMessage;
   /*
   if (readFromAppMemory("Vehicle Pointer").current_value <= basePointerAddress || readFromAppMemory("Vehicle Pointer").current_value >= endPointerAddress) {
     //console.log("Don't do anything I guess");
-    client.action(channelName, "@" + username + " Can't turn vehicle around, player is not in a vehicle, please request a refund!");
+    client.reply(channelName, "@" + username + " Can't turn vehicle around, player is not in a vehicle, please request a refund!", msgId);
     return "Can't turn vehicle around, player is not in a vehicle, please request a refund!";
   }
   */
@@ -2110,13 +2323,13 @@ function turnAround(username, message, channelName, customRewardIndex) {
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Y").current_value));
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Z", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Z").current_value));
     writeToNotificationBox("Turned vehicle around!");
-    client.action(channelName, "@" + username + " Turned vehicle around!");
+    client.reply(channelName, "@" + username + " Turned vehicle around!", msgId);
     return "Turned vehicle around!";
   }
   */
 }
 
-function flipVehicleUpsideDown(username, message, channelName, customRewardIndex) {
+function flipVehicleUpsideDown(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -2125,7 +2338,7 @@ function flipVehicleUpsideDown(username, message, channelName, customRewardIndex
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't flip vehicle upside, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2135,7 +2348,7 @@ function flipVehicleUpsideDown(username, message, channelName, customRewardIndex
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't flip vehicle upside down, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -2144,14 +2357,14 @@ function flipVehicleUpsideDown(username, message, channelName, customRewardIndex
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't flip vehicle upside down, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer <= basePointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't flip vehicle upside down, player is not in a vehicle, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer > basePointerAddress && vehiclePointer < endPointerAddress) {
@@ -2162,12 +2375,12 @@ function flipVehicleUpsideDown(username, message, channelName, customRewardIndex
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt LR", invertNumberSign(readFromAppPointer("Vehicle Pointer", "Vehicle Rotation Tilt LR").current_value));
     returnMessage = "Flipped vehicle upside down!";
     writeToNotificationBox(returnMessage);
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
 }
 
-function changeVehicleColor(username, message, channelName, customRewardIndex) {
+function changeVehicleColor(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   //let msgWords = message.split(/\s+/ig);
   //let colors = message.split(/\,+/ig);
@@ -2178,7 +2391,7 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change vehicle colors, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2226,7 +2439,7 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle colors, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
@@ -2235,14 +2448,14 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle colors, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer <= basePointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle colors, player is not in a vehicle, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(colors[0], 10)) == true || isNaN(parseInt(colors[1], 10)) == true || isNaN(parseInt(colors[2], 10)) == true) {
@@ -2253,7 +2466,7 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     console.log("Invalid colors");
     returnMessage = "Can't change vehicle colors, invalid colors, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(parseInt(colors[0], 10)) == false && isNaN(parseInt(colors[1], 10)) == false && isNaN(parseInt(colors[2], 10)) == false) {
@@ -2261,7 +2474,7 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
       if (parseInt(colors[0], 10) < 0 || parseInt(colors[0], 10) > 255 || parseInt(colors[1], 10) < 0 || parseInt(colors[1], 10) > 255 || parseInt(colors[2], 10) < 0 || parseInt(colors[2], 10) > 255) {
         //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
         returnMessage = "Can't change vehicle colors, invalid colors, please make sure colors are between 0 and 255, please request a refund!";
-        client.action(channelName, "@" + username + " " + returnMessage);
+        client.reply(channelName, "@" + username + " " + returnMessage, msgId);
         return returnMessage;
       }
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2278,14 +2491,14 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
       writeToAppPointer("Vehicle Pointer", "Vehicle Colors Secondary", randColor);
       returnMessage = "Successfully changed vehicle color to " + parseInt(colors[0], 10) + "," + parseInt(colors[1], 10) + "," + parseInt(colors[2], 10) + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (isNaN(parseInt(colors[3], 10)) == false && isNaN(parseInt(colors[4], 10)) == false && isNaN(parseInt(colors[5], 10)) == false) {
       if (parseInt(colors[0], 10) < 0 || parseInt(colors[0], 10) > 255 || parseInt(colors[1], 10) < 0 || parseInt(colors[1], 10) > 255 || parseInt(colors[2], 10) < 0 || parseInt(colors[2], 10) > 255 || parseInt(colors[3], 10) < 0 || parseInt(colors[3], 10) > 255 || parseInt(colors[4], 10) < 0 || parseInt(colors[4], 10) > 255 || parseInt(colors[5], 10) < 0 || parseInt(colors[5], 10) > 255) {
         //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
         returnMessage = "Can't change vehicle colors, invalid colors, please make sure colors are between 0 and 255, please request a refund!";
-        client.action(channelName, "@" + username + " " + returnMessage);
+        client.reply(channelName, "@" + username + " " + returnMessage, msgId);
         return returnMessage;
       }
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2308,13 +2521,13 @@ function changeVehicleColor(username, message, channelName, customRewardIndex) {
       writeToAppPointer("Vehicle Pointer", "Vehicle Colors Secondary", secondaryColor);
       returnMessage = "Successfully changed vehicle primary color to " + parseInt(colors[0], 10) + "," + parseInt(colors[1], 10) + "," + parseInt(colors[2], 10) + " and secondary color to " + parseInt(colors[3], 10) + "," + parseInt(colors[4], 10) + "," + parseInt(colors[5], 10) + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
   }
 }
 
-function spinPlayerVehicle(username, message, channelName, customRewardIndex) {
+function spinPlayerVehicle(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -2323,7 +2536,7 @@ function spinPlayerVehicle(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't spin vehicle, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2333,7 +2546,7 @@ function spinPlayerVehicle(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicle, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
@@ -2342,14 +2555,14 @@ function spinPlayerVehicle(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicle, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer <= basePointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     // rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't spin vehicle, player is not in a vehicle, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer > basePointerAddress && vehiclePointer < endPointerAddress) {
@@ -2358,13 +2571,13 @@ function spinPlayerVehicle(username, message, channelName, customRewardIndex) {
     returnMessage = "LET IT RIP!";
     writeToAppPointer("Vehicle Pointer", "Vehicle Rotation Speed Z", 10);
     writeToNotificationBox(returnMessage);
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     io.sockets.emit("play_sound", "Beyblade");
     return returnMessage;
   }
 }
 
-function changeVehicleHealth(username, message, channelName, customRewardIndex) {
+function changeVehicleHealth(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -2373,7 +2586,7 @@ function changeVehicleHealth(username, message, channelName, customRewardIndex) 
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change vehicle health, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2383,7 +2596,7 @@ function changeVehicleHealth(username, message, channelName, customRewardIndex) 
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle health, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   vehiclePointer = readFromAppMemory("Vehicle Pointer").current_value;
@@ -2392,27 +2605,27 @@ function changeVehicleHealth(username, message, channelName, customRewardIndex) 
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle health, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (vehiclePointer <= basePointerAddress || vehiclePointer >= endPointerAddress) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle health, player is not in a vehicle, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == true) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change vehicle health, invalid vehicle health, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == false) {
     if (Number(msgWords[0]) < 0 || Number(msgWords[0]) > 1000) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       returnMessage = "Can't change vehicle health, invalid vehicle health, please make sure health is between 0 and 1000, please request a refund!";
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (Number(msgWords[0]) >= 0 && Number(msgWords[0]) <= 1000) {
@@ -2421,13 +2634,13 @@ function changeVehicleHealth(username, message, channelName, customRewardIndex) 
       let vehicleHealth = readFromAppPointer("Vehicle Pointer", "Vehicle Health").current_value;
       returnMessage = "Successfully changed vehicle health to " + vehicleHealth + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
   }
 }
 
-function changePlayerHealth(username, message, channelName, customRewardIndex) {
+function changePlayerHealth(username, message, msgId, channelName, customRewardIndex) {
   let returnMessage = "";
   /*
   if (rewardsConfig.rewards[customRewardIndex].cooldown <= new Date().getTime()) {
@@ -2436,7 +2649,7 @@ function changePlayerHealth(username, message, channelName, customRewardIndex) {
   */
   if (rewardsConfig.rewards[customRewardIndex].cooldown > new Date().getTime()) {
     returnMessage = "Can't change health, reward on cooldown, if you're seeing this, it means you bypassed Twitch's cooldown, next reward available in " + parseInt(((rewardsConfig.rewards[customRewardIndex].cooldown - new Date().getTime()) / 1000), 10) + " seconds, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
@@ -2445,7 +2658,7 @@ function changePlayerHealth(username, message, channelName, customRewardIndex) {
   if (processObject == undefined) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change health, game is not running, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   playerPointer = readFromAppMemory("Player Pointer").current_value;
@@ -2453,20 +2666,20 @@ function changePlayerHealth(username, message, channelName, customRewardIndex) {
     //console.log("Don't do anything I guess");
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change health, game is not ready, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == true) {
     //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
     returnMessage = "Can't change health, invalid health number, please request a refund!";
-    client.action(channelName, "@" + username + " " + returnMessage);
+    client.reply(channelName, "@" + username + " " + returnMessage, msgId);
     return returnMessage;
   }
   if (isNaN(Number(msgWords[0])) == false) {
     if (Number(msgWords[0]) < 0 || Number(msgWords[0]) > 200) {
       //rewardsConfig.rewards[customRewardIndex].cooldown = new Date().getTime() + rewardsConfig.rewards[customRewardIndex].countdown;
       returnMessage = "Can't change health, invalid health number, please make sure health is between 0 and 200, please request a refund!";
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
     if (Number(msgWords[0]) >= 0 && Number(msgWords[0]) <= 200) {
@@ -2475,34 +2688,34 @@ function changePlayerHealth(username, message, channelName, customRewardIndex) {
       let playerHealth = readFromAppPointer("Player Pointer", "Player Health").current_value;
       returnMessage = "Successfully changed health to " + playerHealth + "!";
       writeToNotificationBox(returnMessage);
-      client.action(channelName, "@" + username + " " + returnMessage);
+      client.reply(channelName, "@" + username + " " + returnMessage, msgId);
       return returnMessage;
     }
   }
 }
 
-function prepareToWarp(username, message, channelName, customRewardIndex) {
+function prepareToWarp(username, message, msgId, channelName, customRewardIndex) {
   //console.log("This is a warp!");
   let coordinatesMsg = message.replace(/[\s\!]+/ig, "");
   let coordinates = message.split(/[\s\,]+/ig);
   if (isNaN(Number(coordinates[0])) == true) {
-    client.action(channelName, "@" + username + " Invalid coordinates, please request a refund!");
+    client.reply(channelName, "@" + username + " Invalid coordinates, please request a refund!", msgId);
   }
   if (isNaN(Number(coordinates[0])) == false && isNaN(Number(coordinates[1])) == true && isNaN(Number(coordinates[2])) == true) {
     notifMessage = warpToLocation(undefined, undefined, Number(coordinates[0]), customRewardIndex);
     writeToNotificationBox(notifMessage);
-    client.action(channelName, "@" + username + " " + notifMessage);
+    client.reply(channelName, "@" + username + " " + notifMessage, msgId);
   }
   if (isNaN(Number(coordinates[0])) == false && isNaN(Number(coordinates[1])) == false) {
     if (isNaN(Number(coordinates[2])) == true) {
       notifMessage = warpToLocation(Number(coordinates[0]), Number(coordinates[1]), undefined, customRewardIndex);
       writeToNotificationBox(notifMessage);
-      client.action(channelName, "@" + username + " " + notifMessage);
+      client.reply(channelName, "@" + username + " " + notifMessage, msgId);
     }
     if (isNaN(Number(coordinates[2])) == false) {
       notifMessage = warpToLocation(Number(coordinates[0]), Number(coordinates[1]), Number(coordinates[2]), customRewardIndex);
       writeToNotificationBox(notifMessage);
-      client.action(channelName, "@" + username + " " + notifMessage);
+      client.reply(channelName, "@" + username + " " + notifMessage, msgId);
     }
   }
 }
