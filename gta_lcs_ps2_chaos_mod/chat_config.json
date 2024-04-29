@@ -4,7 +4,7 @@
   "github_repo": "https://github.com/WhatAboutGaming/gta-lcs-ps2-chaos-mod",
   "options": {
     "debug": true,
-    "messagesLogLevel": "trace"
+    "messagesLogLevel": "info"
   },
   "connection": {
     "reconnect": true,
