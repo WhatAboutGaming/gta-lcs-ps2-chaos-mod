@@ -1,7 +1,7 @@
 {
-  "process_name": "pcsx2-qtx64-avx2.exe",
-  "base_address": "0x00007FF720000000",
-  "end_address": "0x00007FF722A84000",
+  "process_name": "pcsx2.exe",
+  "base_address": "0x20000000",
+  "end_address": "0x22000000",
   "base_pointer_address": "0x01000000",
   "end_pointer_address": "0x02000000",
   "override_game_settings": true,

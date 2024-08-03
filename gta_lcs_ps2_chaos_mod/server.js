@@ -16,15 +16,21 @@ var chatConfig = JSON.parse(fs.readFileSync(chatConfigFileName, "utf8"));
 var rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
 var beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
 var audioFileExtension = "." + gameMemory.audio_file_extension;
+var beepSoundEffectsArray = chatConfig.beep_sound_effects;
+var doNotLoadArray = chatConfig.do_not_load;
 var overlayPath = gameMemory.overlay_path;
 overlayPath = overlayPath.replace(/({{path_separator}})+/ig, path.sep);
 var overlayFilesList = fs.readdirSync(__dirname + path.sep + overlayPath);
 var overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === audioFileExtension);
 overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
+for (let doNotLoadArrayIndex = 0; doNotLoadArrayIndex < doNotLoadArray.length; doNotLoadArrayIndex++) {
+  overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== doNotLoadArray[doNotLoadArrayIndex]);
+  //console.log(doNotLoadArray[doNotLoadArrayIndex]);
+}
+//console.log(overlayMp3FilesOnly);
 var processName = gameMemory.process_name;
 var gameMemoryToDisplay = [];
 var gameMemoryToOverride = [];
-
 for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
   if (gameMemory.memory_data[gameMemoryObjectIndex].to_override == true) {
     gameMemoryToOverride.push(gameMemory.memory_data[gameMemoryObjectIndex]);
@@ -483,6 +489,8 @@ function checkIfAppExists() {
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
       audioFileExtension = "." + gameMemory.audio_file_extension;
+      beepSoundEffectsArray = chatConfig.beep_sound_effects;
+      doNotLoadArray = chatConfig.do_not_load;
       overlayPath = gameMemory.overlay_path;
       overlayPath = overlayPath.replace(/({{path_separator}})+/ig, path.sep);
       baseMemoryAddress = parseInt(gameMemory.base_address, 16);
@@ -492,6 +500,11 @@ function checkIfAppExists() {
       overlayFilesList = fs.readdirSync(__dirname + path.sep + overlayPath);
       overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === audioFileExtension);
       overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
+      for (let doNotLoadArrayIndex = 0; doNotLoadArrayIndex < doNotLoadArray.length; doNotLoadArrayIndex++) {
+        overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== doNotLoadArray[doNotLoadArrayIndex]);
+        //console.log(doNotLoadArray[doNotLoadArrayIndex]);
+      }
+      //console.log(overlayMp3FilesOnly);
       processObject = memoryjs.openProcess(processName);
       for (let gameMemoryObjectIndex = 0; gameMemoryObjectIndex < gameMemory.memory_data.length; gameMemoryObjectIndex++) {
         if (gameMemory.memory_data[gameMemoryObjectIndex].to_override == true) {
@@ -3288,7 +3301,11 @@ var io = require("socket.io")(server);
 io.sockets.on("connection",
   // We are given a websocket object in our function
   function(socket) {
-
+    gameMemory = JSON.parse(fs.readFileSync(gameMemoryConfigFileName, "utf8"));
+    chatConfig = JSON.parse(fs.readFileSync(chatConfigFileName, "utf8"));
+    rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
+    beepSoundEffectsArray = chatConfig.beep_sound_effects;
+    doNotLoadArray = chatConfig.do_not_load;
     console.log("We have a new client: " + socket.id);
     if (processObject == undefined) {
       console.log("Client connected, app NOT running");
@@ -3296,7 +3313,7 @@ io.sockets.on("connection",
       gameMemoryToOverride = [];
       characterData = [];
       controlCharacterData = [];
-      io.to(socket.id).emit("game_memory_to_display", gameMemoryToDisplay);
+      io.sockets.emit("game_memory_to_display", gameMemoryToDisplay);
     }
     if (processObject != undefined) {
       console.log("Client connected, app running");
@@ -3305,6 +3322,8 @@ io.sockets.on("connection",
       rewardsConfig = JSON.parse(fs.readFileSync(rewardsConfigFileName, "utf8"));
       beybladeSfxFileName = gameMemory.beyblade_sfx_filename;
       audioFileExtension = "." + gameMemory.audio_file_extension;
+      beepSoundEffectsArray = chatConfig.beep_sound_effects;
+      doNotLoadArray = chatConfig.do_not_load;
       overlayPath = gameMemory.overlay_path;
       overlayPath = overlayPath.replace(/({{path_separator}})+/ig, path.sep);
       baseMemoryAddress = parseInt(gameMemory.base_address, 16);
@@ -3314,6 +3333,11 @@ io.sockets.on("connection",
       overlayFilesList = fs.readdirSync(__dirname + path.sep + overlayPath);
       overlayMp3FilesOnly = overlayFilesList.filter(file => path.extname(file).toLowerCase() === audioFileExtension);
       overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== beybladeSfxFileName);
+      for (let doNotLoadArrayIndex = 0; doNotLoadArrayIndex < doNotLoadArray.length; doNotLoadArrayIndex++) {
+        overlayMp3FilesOnly = overlayMp3FilesOnly.filter(file => file.toLowerCase() !== doNotLoadArray[doNotLoadArrayIndex]);
+        //console.log(doNotLoadArray[doNotLoadArrayIndex]);
+      }
+      //console.log(overlayMp3FilesOnly);
       gameMemoryToDisplay = [];
       gameMemoryToOverride = [];
       characterData = [];
@@ -3359,9 +3383,10 @@ io.sockets.on("connection",
       };
       //console.log(mp3FilesListObject);
       //console.log(gameMemoryToDisplay);
-      io.to(socket.id).emit("mp3_files_list_object", mp3FilesListObject);
-      io.to(socket.id).emit("game_memory_to_display", gameMemoryToDisplay);
+      io.sockets.emit("mp3_files_list_object", mp3FilesListObject);
+      io.sockets.emit("game_memory_to_display", gameMemoryToDisplay);
     }
+    io.sockets.emit("beep_sound_effects_array", beepSoundEffectsArray);
     socket.on("disconnect", function() {
       console.log("Client has disconnected: " + socket.id);
     });
